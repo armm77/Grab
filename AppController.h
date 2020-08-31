@@ -1,27 +1,34 @@
-/* 
+/*
    Project: Grab
 
-   Author: me
+   Author: Andres Morales
 
-   Created: 2020-07-04 16:14:10 +0300 by me
-   
+   Created: 2020-07-04 16:14:10 +0300 by armm77
+
    Application Controller
 */
- 
+
 #ifndef _PCAPPPROJ_APPCONTROLLER_H
 #define _PCAPPPROJ_APPCONTROLLER_H
 
 #import <AppKit/AppKit.h>
-// Uncomment if your application is Renaissance-based
-//#import <Renaissance/Renaissance.h>
+#import <X11/Xlib.h>
 
 @interface AppController : NSObject
 {
- id infoPanel;
- id inspectorPanel;
+  NSTimer  *_timer;
+  //NSCursor *_cursor;
+
+  int totalSeconds;
+
+  id  infoPanel;
+  id  cursorPanel;
+  id  inspectorPanel;
+
+  Display *gDisplay;
 }
 
-+ (void)  initialize;
++ (void) initialize;
 
 - (id) init;
 - (void) dealloc;
@@ -32,11 +39,21 @@
 - (BOOL) applicationShouldTerminate: (id)sender;
 - (void) applicationWillTerminate: (NSNotification *)aNotif;
 - (BOOL) application: (NSApplication *)application
-	    openFile: (NSString *)fileName;
+            openFile: (NSString *)fileName;
 
-- (void) showPrefPanel: (id)sender;
+- (void) savaAsImage: (XImage *)image;
+- (void) updateCountDownTime;
+
 - (void) showInfoPanel: (id)sender;
+- (void) showCursorPanel: (id)sender;
 - (void) showInspectorPanel: (id)sender;
+
+- (void) captureSelection: (id)sender;
+- (void) captureWindow: (id)sender;
+- (void) captureScreen;
+- (void) captureTimedScreen: (id)sender;
+
+//- (void) saveAsPngWithName:(NSString*) fileName;
 
 @end
 

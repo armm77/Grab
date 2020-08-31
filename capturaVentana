@@ -1,0 +1,159 @@
+/* int x=-1, y=-1, button;
+ XEvent event;
+ //Display *display = XOpenDisplay(NULL);
+ Window root = XDefaultRootWindow(display);
+
+ XGrabPointer(display, root, False, ButtonPressMask, GrabModeAsync, \
+               GrabModeAsync, None, None, CurrentTime);
+
+ while(1){
+   XNextEvent(display,&event);
+   switch(event.type){
+     case ButtonPress:
+       switch(event.xbutton.button){
+         case Button1:
+           x=event.xbutton.x;
+           y=event.xbutton.y;
+           button=Button1;
+           break;
+         default:
+           break;
+       }
+       break;
+     default:
+       break;
+   }
+   if(x>=0 && y>=0)
+     break;
+ }
+
+ if(button==Button1)
+   printf("click 1 at %d %d \n",x,y);
+   NSLog(@"click 1 at %d %d \n",x,y);
+
+ XCloseDisplay(display);
+*/
+/*	int click = 0;
+ //FILE *file;
+ XEvent event;
+ XWindowAttributes gwa;
+
+ Display *display = XOpenDisplay(NULL);
+
+ int fd = ConnectionNumber(display);
+ fd_set fds;
+
+ Window *window = &DefaultRootWindow(display);
+ Cursor cursor = XCreateFontCursor(display, XC_hand2);
+
+XGrabPointer(display, *window, False, ButtonReleaseMask, \
+           GrabModeAsync, GrabModeAsync, \
+           None, cursor, CurrentTime);
+
+ while (!click) {
+   FD_ZERO(&fds);
+   FD_SET(fd, &fds);
+   printf("click %d\n", click);
+   select(fd + 1, &fds, NULL, NULL, NULL);
+   if (XPending(display)) {
+     XNextEvent(display, &event);
+     if (event.type == 5) {
+       if (event.xbutton.subwindow)
+         *window = event.xbutton.subwindow;
+       click = 1;
+     }
+   }
+ }
+
+ XGetWindowAttributes(display, *window, &gwa);
+ int width = gwa.width;
+ int height = gwa.height;
+
+ XImage *image = XGetImage(display, *window, 0, 0, width, height, AllPlanes, ZPixmap);
+
+ char *rgb = malloc(image->width * image->height * 3);
+
+ for(int i=0, j = 0; i <  image->width * image->height * 4; i = i + 4){
+    rgb[j] = image->data[i+2];
+    rgb[j+1] = image->data[i+1];
+    rgb[j+2] = image->data[i];
+    j = j + 3;
+ }
+
+ int result = stbi_write_png("CaptureWindow.png", \
+             image->width, image->height, 3, rgb, image->width *  3);
+ NSLog(@"Capture Window %d\n", result);
+ XFree(image);
+ XCloseDisplay(display);
+*/ //////////////////////////////////////////////////
+ /*
+ XImage *image = XGetImage(display, *window, 0, 0, attr.width, attr.height, AllPlanes, ZPixmap);
+ printf("* Windows: %ld\n", *window);
+
+ XUngrabServer(display);
+ XCloseDisplay(display);
+
+ file = fopen("test.png", "w");
+ if (file == NULL) {
+   fprintf(stderr, "cannot open file.\n");
+   XDestroyImage(image);
+   return 1;
+ }
+ printximg(image, file);
+ fclose(file);
+*/
+//	XDestroyImage(image);
+
+/* Display *display = XOpenDisplay(NULL);
+ Window root = RootWindow(display, DefaultScreen(display));
+
+ Window window = 0;
+
+ Atom key = XInternAtom(display, "_NET_ACTIVE_WINDOW", False);
+ NSLog(@"key: %d\n",key);
+ Atom value;
+ int format;
+ unsigned long extra, n;
+ unsigned char *data;
+ XGetWindowProperty(display, root, key, 0, ~0, False, AnyPropertyType, &value, &format, &n, &extra, &data);
+
+ if (data) {
+    window = *(Window*)data;
+ }
+
+ if (window == None) {
+    int revert_to;
+    XGetInputFocus(display, &window, &revert_to);
+ }
+
+ if (window == None) {
+    NSLog(@"No focused window?\n");
+    return;
+ }
+
+ unsigned int border_size, depth, width, height;
+ int x, y;
+
+ XGetGeometry(display, window, &root, &x, &y, &width, &height, &border_size, &depth);
+
+ Window child;
+ XTranslateCoordinates(display, window, root,0, 0, &x, &y, &child);
+ x -= border_size;
+ y -= border_size;
+ width += 2 * border_size;
+ height += 2 * border_size;
+
+XImage *image = XGetImage(display,root, x, y, width, height, AllPlanes, ZPixmap);
+char *rgb = malloc(image->width * image->height * 3);
+
+ for(int i=0, j = 0; i < image->width * image->height * 4; i = i + 4){
+   rgb[j] = image->data[i+2];
+   rgb[j+1] = image->data[i+1];
+   rgb[j+2] = image->data[i];
+   j = j + 3;
+ }
+
+ int result = stbi_write_png("test.png", image->width, image->height, 3, rgb, image->width *  3);
+ NSLog(@"Capture Window %d\n", result);
+ XFree(image);
+ XCloseDisplay(display);*/

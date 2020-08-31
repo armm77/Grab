@@ -23,7 +23,8 @@
     FRAMEWORKS = (
     );
     "HEADER_FILES" = (
-	"AppController.h"
+	"AppController.h",
+	"stb_image_write.h"
     );
     IMAGES = (
 	"CameraNormal.tiff",
@@ -60,7 +61,7 @@
 	"gnustep-base",
 	"gnustep-gui"
     );
-    LINKEROPTIONS = "";
+    LINKEROPTIONS = "-lX11 -lXcursor";
     "LOCALIZED_RESOURCES" = (
     );
     MAININTERFACE = "Grab.gorm";

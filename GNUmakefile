@@ -54,7 +54,8 @@ Resources/Grab.App.tiff
 # Header files
 #
 Grab_HEADER_FILES = \
-AppController.h
+AppController.h \
+stb_image_write.h
 
 #
 # Class files

@@ -2,21 +2,26 @@
     "## Comment" = "Do NOT change this file, Gorm maintains it";
     AppController = {
 	Actions = (
-	    "showPrefPanel:",
 	    "showInfoPanel:",
-	    "showInspectorPanel:"
+	    "showCursorPanel:",
+	    "showInspectorPanel:",
+	    "captureScreen:"
 	);
 	Outlets = (
 	    infoPanel,
-	    inspectorPanel
+	    inspectorPanel,
+	    cursorPanel
 	);
 	Super = NSObject;
     };
     FirstResponder = {
 	Actions = (
+	    "captureScreen:",
+	    "showCursorPanel:",
 	    "showInfoPanel:",
 	    "showInspectorPanel:",
-	    "showPrefPanel:"
+	    "showPrefPanel:",
+	    "showPrefsPanel:"
 	);
 	Super = NSObject;
     };

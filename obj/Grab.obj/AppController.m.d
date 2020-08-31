@@ -405,7 +405,7 @@ obj/Grab.obj/AppController.m.o: AppController.m AppController.h \
   /Developer/Headers/AppKit/NSVisualEffectView.h \
   /Developer/Headers/AppKit/NSWindowController.h \
   /Developer/Headers/AppKit/PSOperators.h \
-  /Developer/Headers/AppKit/DPSOperators.h
+  /Developer/Headers/AppKit/DPSOperators.h stb_image_write.h
 
 AppController.h:
 
@@ -1228,3 +1228,5 @@ AppController.h:
 /Developer/Headers/AppKit/PSOperators.h:
 
 /Developer/Headers/AppKit/DPSOperators.h:
+
+stb_image_write.h:
