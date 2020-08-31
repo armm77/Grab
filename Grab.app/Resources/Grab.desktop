@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Categories=X-GNUstep;
-Name=Grab
-Comment=for screen capture...
-Icon=/Applications/Grab.app/Resources/Grab.App.tiff
-Exec=/usr/NextSpace/bin/openapp Grab
-MimeType=
