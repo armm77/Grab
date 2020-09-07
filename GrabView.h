@@ -18,9 +18,16 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#import <AppKit/AppKit.h>
+#import <DesktopKit/DesktopKit.h>
 
-int main(int argc, const char *argv[])
+//@class GrabString;
+
+@interface GrabView : NSView
 {
-  return NSApplicationMain (argc, argv);
+  NSImage	*_buttonImage;
 }
+
+- (void) setImage:(NSImage *)image;
+- (id) initWithFrame:(NSRect)frameRect;
+
+@end

@@ -1,6 +1,8 @@
 /*
    Project: Grab
+
    Author: Andres Morales
+
    Created: 2020-07-04 16:14:10 +0300 by armm77
 
    This program is free software; you can redistribute it and/or modify
@@ -18,9 +20,39 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#import <AppKit/AppKit.h>
+#import "GrabView.h"
 
-int main(int argc, const char *argv[])
+@implementation GrabView : NSView
+
+- (id)initWithFrame:(NSRect)frameRect
 {
-  return NSApplicationMain (argc, argv);
+  [super initWithFrame:frameRect];
+
+  _buttonImage = [[NSImage imageNamed:@"CameraWatch.png"] copy];
+
+  return self;
 }
+
+- (void)drawRect:(NSRect)rect
+{
+  [[NSImage imageNamed:@"common_Tile"] compositeToPoint:NSMakePoint(0, 0)
+                                              operation:NSCompositeSourceOver];
+  [_buttonImage
+    compositeToPoint:NSMakePoint((64 - [_buttonImage size].width)/2, 20)
+           operation:NSCompositeSourceOver];
+
+  [super drawRect:rect];
+}
+
+- (void)setImage:(NSImage *)image
+{
+  if (_buttonImage != nil) {
+    [_buttonImage release];
+  }
+  _buttonImage = [image copy];
+  [_buttonImage setScalesWhenResized:NO];
+
+  [self setNeedsDisplay:YES];
+}
+
+@end
