@@ -19,6 +19,7 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#import <Foundation/NSBundle.h>
 #import "GrabController.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -52,15 +53,43 @@
 
 - (void) dealloc
 {
+  [_timer invalidate];
+  [_timer release];
   [super dealloc];
 }
 
 - (void) awakeFromNib
 {
+  if (_grabView)
+  return;
+
+_grabView = [[GrabView alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
+[[NSApp iconWindow] setContentView:_grabView];
+
+_timer = [NSTimer scheduledTimerWithTimeInterval:1800.0
+                                         target:self
+                                       selector:@selector(updateGrab:)
+                                       userInfo:nil
+                                        repeats:YES];
+}
+
+- (void)updateGrab:(NSTimer *)timer
+{
+  NSDictionary *_grab = nil;
+
+  if (_grab && [[_grab objectForKey:@"ErrorText"] length] == 0) {
+    NSLog(@"Got weather forecast. %@", _grab);
+    [_grabView setImage:[_grab objectForKey:@"Image"]];
+    [_grabView setNeedsDisplay:YES];
+  }
+  else {
+    NSLog(@"Error getting data: %@", [_grab objectForKey:@"ErrorText"]);
+  }
 }
 
 - (void) applicationDidFinishLaunching: (NSNotification *)aNotif
 {
+  [self updateGrab:nil];
 // Uncomment if your application is Renaissance-based
 //  [NSBundle loadGSMarkupNamed: @"Main" owner: self];
 }
@@ -77,7 +106,7 @@
 - (BOOL) application: (NSApplication *)application
             openFile: (NSString *)fileName
 {
-  return NO;
+  return YES;
 }
 
 - (void) showInfoPanel: (id)sender

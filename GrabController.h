@@ -33,6 +33,7 @@
 
 @interface GrabController : NSObject
 {
+  GrabView  *_grabView;
   NSBundle  *_bundle;
   NSCursor  *_cursor;
   NSTimer   *_timer;

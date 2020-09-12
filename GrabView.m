@@ -24,11 +24,29 @@
 
 @implementation GrabView : NSView
 
+- (BOOL)acceptsFirstMouse:(NSEvent *)anEvent
+{
+  return YES;
+}
+
+- (void)mouseDown:(NSEvent *)event
+{
+  NSLog(@"mouseDown:");
+  if ([event clickCount] >= 2)
+    {
+      [NSApp activateIgnoringOtherApps:YES];
+    }
+  else
+    {
+      [self setImage:[NSImage imageNamed:@"WaitCursor.tiff"]];
+    }
+}
+
 - (id)initWithFrame:(NSRect)frameRect
 {
   [super initWithFrame:frameRect];
 
-  _buttonImage = [[NSImage imageNamed:@"CameraWatch.png"] copy];
+  _buttonImage = [[NSImage imageNamed:@"CameraWatch.tiff"] copy];
 
   return self;
 }
@@ -42,6 +60,12 @@
            operation:NSCompositeSourceOver];
 
   [super drawRect:rect];
+}
+
+- (void)dealloc
+{
+  [_buttonImage release];
+  [super dealloc];
 }
 
 - (void)setImage:(NSImage *)image
