@@ -4,17 +4,18 @@
     "APP_TYPE" = GORM;
     "BUILDER_STRIP" = YES;
     "BUILDER_TARGETS" = (
-	   all,
-     install,
-	   uninstall,
-	   clean,
-	   distclean,
-	   dist
+	all,
+	install,
+	uninstall,
+	clean,
+	distclean,
+	dist
     );
     "BUILDER_VERBOSE" = YES;
+    "BUNDLE_IDENTIFIER" = "";
     "CLASS_FILES" = (
-	  "GrabController.m",
-    "GrabView.m"
+	"GrabController.m",
+	"GrabView.m"
     );
     COMPILEROPTIONS = "";
     CPPOPTIONS = "";
@@ -24,46 +25,46 @@
     FRAMEWORKS = (
     );
     "HEADER_FILES" = (
-	  "GrabController.h",
-    "GrabView.h",
-	  "stb_image_write.h"
+	"GrabController.h",
+	"GrabView.h",
+	"stb_image_write.h"
     );
     IMAGES = (
-	  "CameraNormal.tiff",
-	  "ArrowCursor.tiff",
-	  "CameraEye1.tiff",
-	  "CameraEye2.tiff",
-	  "CameraEye3.tiff",
-	  "CameraEyeFlash.tiff",
-    "CameraNormal.tiff",
-	  "CameraPointer.tiff",
-	  "CameraWatch.tiff",
-	  "CameraWatchFlash.tiff",
-	  "copyCursor.tiff",
-	  "genericCursor.tiff",
-	  "HelpCursor.tiff",
-	  "IbeamCursor.tiff",
-	  "linkCursor.tiff",
-	  "PiePieces.tiff",
-	  "PlaceCursor.tiff",
-	  "PointerCursor.tiff",
-	  "SelectCursor.tiff",
-	  "WaitCursor.tiff",
-	  "Grab.App.tiff"
+	"CameraNormal.tiff",
+	"ArrowCursor.tiff",
+	"CameraEye1.tiff",
+	"CameraEye2.tiff",
+	"CameraEye3.tiff",
+	"CameraEyeFlash.tiff",
+	"CameraNormal.tiff",
+	"CameraPointer.tiff",
+	"CameraWatch.tiff",
+	"CameraWatchFlash.tiff",
+	"copyCursor.tiff",
+	"genericCursor.tiff",
+	"HelpCursor.tiff",
+	"IbeamCursor.tiff",
+	"linkCursor.tiff",
+	"PiePieces.tiff",
+	"PlaceCursor.tiff",
+	"PointerCursor.tiff",
+	"SelectCursor.tiff",
+	"WaitCursor.tiff",
+	"Grab.App.tiff"
     );
     INSTALLDIR = "$(HOME)/GNUstep";
     INTERFACES = (
-	  "Grab.gorm",
-	  "InfoPanel.gorm",
-	  "InspectorPanel.gorm",
-	  "CursorTypes.gorm"
+	"Grab.gorm",
+	"InfoPanel.gorm",
+	"InspectorPanel.gorm",
+	"CursorTypes.gorm"
     );
     LANGUAGE = English;
     LIBRARIES = (
-	  "gnustep-base",
-	  "gnustep-gui"
+	"gnustep-base",
+	"gnustep-gui"
     );
-    LINKEROPTIONS = "-lX11 -lXcursor -lDesktopKit";
+    LINKEROPTIONS = "-lX11 -lXcursor";
     "LOCALIZED_RESOURCES" = (
     );
     MAININTERFACE = "Grab.gorm";
@@ -72,22 +73,17 @@
     "OTHER_RESOURCES" = (
     );
     "OTHER_SOURCES" = (
-	  "Grab_main.m"
+	"Grab_main.m"
     );
     "PRINCIPAL_CLASS" = NSApplication;
     "PROJECT_AUTHORS" = (
-	  "Andres Morales"
+	"Andres Morales"
     );
     "PROJECT_COPYRIGHT" = "Copyright (C) 2020";
     "PROJECT_COPYRIGHT_DESC" = GPL;
     "PROJECT_CREATOR" = armm77;
     "PROJECT_DESCRIPTION" = "for screen capture...";
     "PROJECT_DOCUMENTTYPES" = (
-	{
-	  NSUnixExtensions = (
-		""
-	    );
-	}
     );
     "PROJECT_GROUP" = "No group avaliable!";
     "PROJECT_MAINTAINER" = armm77;
@@ -103,13 +99,12 @@
     SUBPROJECTS = (
     );
     "SUPPORTING_FILES" = (
-    "GNUmakefile",
-	  "GNUmakefile.preamble",
-	  "GNUmakefile.postamble",
-	  "GrabInfo.plist"
+	GNUmakefile,
+	"GNUmakefile.preamble",
+	"GNUmakefile.postamble",
+	"GrabInfo.plist"
     );
     "USER_LANGUAGES" = (
-	  AmericanEnglish,
-	  English
+	English
     );
 }

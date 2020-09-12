@@ -15,12 +15,5 @@
     NSMainNibFile = "Grab.gorm";
     NSPrincipalClass = NSApplication;
     NSRole = Application;
-    NSTypes = (
-	{
-	    NSUnixExtensions = (
-		""
-	    );
-	}
-    );
     URL = "https://github.com/armm77";
 }
