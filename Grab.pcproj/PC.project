@@ -15,7 +15,8 @@
     "BUNDLE_IDENTIFIER" = "";
     "CLASS_FILES" = (
 	"GrabController.m",
-	"GrabView.m"
+	"GrabView.m",
+	"GrabWork.m"
     );
     COMPILEROPTIONS = "";
     CPPOPTIONS = "";
@@ -27,6 +28,7 @@
     "HEADER_FILES" = (
 	"GrabController.h",
 	"GrabView.h",
+	"GrabWork.h",
 	"stb_image_write.h"
     );
     IMAGES = (
@@ -64,7 +66,7 @@
 	"gnustep-base",
 	"gnustep-gui"
     );
-    LINKEROPTIONS = "-lX11 -lXcursor";
+    LINKEROPTIONS = "-lX11 -lXcursor -lSystemKit -lDesktopKit";
     "LOCALIZED_RESOURCES" = (
     );
     MAININTERFACE = "Grab.gorm";

@@ -27,6 +27,7 @@ PACKAGE_NAME = Grab
 APP_NAME = Grab
 Grab_APPLICATION_ICON = Grab.App.tiff
 
+
 #
 # Resource files
 #
@@ -55,7 +56,8 @@ Resources/PlaceCursor.tiff \
 Resources/PointerCursor.tiff \
 Resources/SelectCursor.tiff \
 Resources/WaitCursor.tiff \
-Resources/Grab.App.tiff
+Resources/Grab.App.tiff 
+
 
 #
 # Header files
@@ -78,7 +80,7 @@ GrabWork.m
 # Other sources
 #
 Grab_OBJC_FILES += \
-Grab_main.m
+Grab_main.m 
 
 #
 # Makefiles
