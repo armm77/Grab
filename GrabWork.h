@@ -18,13 +18,35 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 #import <AppKit/AppKit.h>
+#import <SystemKit/OSEScreen.h>
+#import "GrabView.h"
+#include <arpa/inet.h> // define tipos de variables uint32_t
+#include <sys/select.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/cursorfont.h>
 
-@interface GrabView : NSView
+@interface GrabWork : NSObject
 {
-  NSImage *_appImage;
-  NSImage	*_buttonImage;
+  OSEDisplay  *oseDisplay;
+  OSEScreen   *oseSreen;
+  GrabView    *grabView;
+  NSString    *_imagePath;
+  NSCursor    *_cursor;
+  NSTimer     *_timer;
+
+  int totalSeconds;
 }
 
-- (void) setImage: (NSImage *)image;
+- (void) saveAsImage: (XImage *)image;
+- (void) updateCountDownTime;
+
+- (void) captureSelection;
+- (void) captureWindow;
+- (void) captureScreen;
+- (void) captureTimedScreen;
 
 @end

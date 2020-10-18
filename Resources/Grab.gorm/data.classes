@@ -7,6 +7,10 @@
 	    "captureTimedScreen:",
 	    "captureWindow:",
 	    "newAction:",
+	    "optionScreen:",
+	    "optionSelection:",
+	    "optionTimedScreen:",
+	    "optionWindow:",
 	    "showCursorPanel:",
 	    "showInfoPanel:",
 	    "showInspectorPanel:"
@@ -18,9 +22,13 @@
 	    "showInfoPanel:",
 	    "showCursorPanel:",
 	    "showInspectorPanel:",
+	    "optionSelection:",
 	    "captureSelection:",
+	    "optionWindow:",
 	    "captureWindow:",
+	    "optionScreen:",
 	    "captureScreen:",
+	    "optionTimedScreen:",
 	    "captureTimedScreen:"
 	);
 	Outlets = (

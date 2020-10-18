@@ -18,28 +18,15 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-
-#include <arpa/inet.h> // define tipos de variables uint32_t
-#include <stdio.h>
-#include <stdlib.h>
-#include <X11/X.h>
-#include <sys/select.h>
-#include <X11/Xutil.h>
-#include <X11/cursorfont.h>
-
 #import <AppKit/AppKit.h>
-#import <X11/Xlib.h>
 #import <GrabView.h>
+#import <GrabWork.h>
 
 @interface GrabController : NSObject
 {
-  GrabView  *_grabView;
-  NSBundle  *_bundle;
-  NSCursor  *_cursor;
-  NSTimer   *_timer;
-  NSImage	  *_buttonImage;
-  NSString  *_imagePath;
-  NSApplication *NSApp;
+  GrabView    *grabView;
+  GrabWork    *grabWork;
+  NSTimer     *_timer;
 
   int totalSeconds;
 
@@ -60,16 +47,15 @@
 - (BOOL) application: (NSApplication *)application
             openFile: (NSString *)fileName;
 
-- (void) savaAsImage: (XImage *)image;
-- (void) updateCountDownTime;
-
 - (void) showInfoPanel: (id)sender;
 - (void) showCursorPanel: (id)sender;
 - (void) showInspectorPanel: (id)sender;
 
-- (void) captureSelection: (id)sender;
-- (void) captureWindow: (id)sender;
-- (void) captureScreen: (id)sender;
-- (void) captureTimedScreen: (id)sender;
+- (void) updateCountDownTime;
+
+- (void) optionSelection: (id)sender;
+- (void) optionWindow: (id)sender;
+- (void) optionScreen: (id)sender;
+- (void) optionTimedScreen: (id)sender;
 
 @end

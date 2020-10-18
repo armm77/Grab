@@ -27,7 +27,6 @@ PACKAGE_NAME = Grab
 APP_NAME = Grab
 Grab_APPLICATION_ICON = Grab.App.tiff
 
-
 #
 # Resource files
 #
@@ -56,8 +55,7 @@ Resources/PlaceCursor.tiff \
 Resources/PointerCursor.tiff \
 Resources/SelectCursor.tiff \
 Resources/WaitCursor.tiff \
-Resources/Grab.App.tiff 
-
+Resources/Grab.App.tiff
 
 #
 # Header files
@@ -65,6 +63,7 @@ Resources/Grab.App.tiff
 Grab_HEADER_FILES = \
 GrabController.h \
 GrabView.h \
+GrabWork.h \
 stb_image_write.h
 
 #
@@ -72,13 +71,14 @@ stb_image_write.h
 #
 Grab_OBJC_FILES = \
 GrabController.m \
-GrabView.m
+GrabView.m \
+GrabWork.m
 
 #
 # Other sources
 #
 Grab_OBJC_FILES += \
-Grab_main.m 
+Grab_main.m
 
 #
 # Makefiles
