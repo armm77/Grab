@@ -22,7 +22,7 @@
 @interface GrabView : NSView
 {
   NSImage *_appImage;
-  NSImage	*_buttonImage;
+  NSImage *_buttonImage;
 }
 
 - (void) setImage: (NSImage *)image;

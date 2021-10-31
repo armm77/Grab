@@ -51,8 +51,6 @@
 - (void) showCursorPanel: (id)sender;
 - (void) showInspectorPanel: (id)sender;
 
-- (void) updateCountDownTime;
-
 - (void) optionSelection: (id)sender;
 - (void) optionWindow: (id)sender;
 - (void) optionScreen: (id)sender;

@@ -1,8 +1,6 @@
 /*
    Project: Grab
-
    Author: Andres Morales
-
    Created: 2020-07-04 16:14:10 +0300 by armm77
 
    This program is free software; you can redistribute it and/or modify
@@ -20,14 +18,41 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 #import <SystemKit/OSEScreen.h>
-#import "GrabWork.h"
-#import "GrabView.h"
-#import "GrabController.h"
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#import <GrabWork.h>
 
 @implementation GrabWork : NSObject
+
+/* LSBFirst: BGRA -> RGBA */
+static void
+convertrow_lsb(unsigned char *drow, unsigned char *srow, XImage *img) {
+	int sx, dx;
+
+	for(sx = 0, dx = 0; dx < img->bytes_per_line; sx += 4) {
+		drow[dx++] = srow[sx + 2]; /* B -> R */
+		drow[dx++] = srow[sx + 1]; /* G -> G */
+		drow[dx++] = srow[sx];     /* R -> B */
+		if(img->depth == 32)
+			drow[dx++] = srow[sx + 3]; /* A -> A */
+		else
+			drow[dx++] = 255;
+	}
+}
+
+/* MSBFirst: ARGB -> RGBA */
+static void
+convertrow_msb(unsigned char *drow, unsigned char *srow, XImage *img) {
+	int sx, dx;
+
+	for(sx = 0, dx = 0; dx < img->bytes_per_line; sx += 4) {
+		drow[dx++] = srow[sx + 1]; /* G -> R */
+		drow[dx++] = srow[sx + 2]; /* B -> G */
+		drow[dx++] = srow[sx + 3]; /* A -> B */
+		if(img->depth == 32)
+			drow[dx++] = srow[sx]; /* R -> A */
+		else
+			drow[dx++] = 255;
+	}
+}
 
 - (void) dealloc
 {
@@ -42,7 +67,7 @@
      totalSeconds -= 1;
      NSLog (@"Timer:%02d",totalSeconds);
   } else {
-//     [self captureScreen];
+     [self captureScreen];
      [_timer invalidate];
   }
 }
@@ -164,40 +189,57 @@
   Display *display = XOpenDisplay(NULL);
   Window window = DefaultRootWindow(display);
   Cursor cursor = XCreateFontCursor(display, XC_hand2);
-  XEvent event;
-  XWindowAttributes gwa;
-  int click = 0;
-  int fd = ConnectionNumber(display);
-  fd_set fds;
+  XEvent ev;
+  int rev = 0;
 
-  XGrabPointer(display, window, False, ButtonReleaseMask, \
-              GrabModeAsync, GrabModeAsync, \
-              None, cursor, CurrentTime);
+  //XWindowAttributes gwa;
 
-  while (!click) {
-     FD_ZERO(&fds);
-     FD_SET(fd, &fds);
-     select(fd + 1, &fds, NULL, NULL, NULL);
-     if (XPending(display)) {
-        XNextEvent(display, &event);
-        if (event.type == 5) {
-           if (event.xbutton.subwindow)
-              window = event.xbutton.subwindow;
-         click = 1;
-      }
-    }
-  }
+ /* if (XGrabPointer(display, window, False, ButtonPressMask | \
+               ButtonReleaseMask, GrabModeAsync, GrabModeAsync, \
+               window, cursor, CurrentTime) != GrabSuccess) {
+                 NSLog(@"XGrabPointer: NULL\n");
+  }*/
 
-  XMapRaised(display, window);
-  XGetWindowAttributes(display, window, &gwa);
+/*	while (ev.type != ButtonPress) {
+		XNextEvent(display, &ev);
+		window = ev.xbutton.subwindow;
+    NSLog(@"1.Window: %lu\n", window);
+	}
+/*
+	while (rev == 0) {
+    XGetInputFocus(display, &window, &rev);
+    NSLog(@"XGetInputFocus: %d\n", XGetInputFocus);
+    NSLog(@"display: %d\n", display);
+    NSLog(@"window: %lu\n", window);
+    NSLog(@"rev: %d\n", rev);
+	}
+*/
+XGetInputFocus(display, &window, &rev);
 
-  XImage *image = XGetImage(display, window, 0, 0, \
-                  gwa.width, gwa.height, AllPlanes, ZPixmap);
+// NSLog(@"XGetInputFocus: %d\n", XGetInputFocus);
+/*
+  XEvent ev = {0};
+	while (ev.type != ButtonPress) {
+		XNextEvent(display, &ev);
+		window = ev.xbutton.subwindow;
+    NSLog(@"Window: %lu\n", window);
+	}
+*/
+  //XMapRaised(display, window);
+ // XGetWindowAttributes(display, window, &gwa);
 
-  [self saveAsImage:image];
+  //XImage *image = XGetImage(display, window, 0, 0, \
+  //                gwa.width, gwa.height, AllPlanes, ZPixmap);
+
+  //[self saveAsImage:image];
+  
+  NSLog(@"XGetInputFocus: %d\n", XGetInputFocus);
+  NSLog(@"display: %d\n", display);
+  NSLog(@"window: %lu\n", window);
+  NSLog(@"rev: %d\n", rev);
+  NSLog(@"==Salida de Captura Windows==");
 
   XUngrabPointer(display, CurrentTime);
-  XUngrabServer(display);
   XFreeCursor(display, cursor);
 	XSync(display, True);
   XCloseDisplay(display);
@@ -221,29 +263,70 @@
 
 - (void) captureTimedScreen
 {
-
-    //grabView = [[GrabView alloc] init];
-    [grabView setImage:[NSImage imageNamed:@"Grab.App.tiff"]];
-    [grabView setNeedsDisplay:YES];
   totalSeconds = 5;
   _timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self
+  
   selector:@selector(updateCountDownTime) userInfo:nil repeats:YES];
 }
 
 - (void) saveAsImage: (XImage *)image
 {
-  char *rgb = malloc(image->width * image->height * 3);
-
-  for(int i = 0, j = 0; i <  image->width * image->height * 4; i = i + 4){
-     rgb[j] = image->data[i+2];
-     rgb[j+1] = image->data[i+1];
-     rgb[j+2] = image->data[i];
-     j = j + 3;
+  
+  FILE *fp;
+  fp = fopen("test.png", "w");
+  if (fp == NULL) {
+     	NSLog(@"Cannot open file.\n");
+ 	    XDestroyImage(image); 
+  } else {
+    NSLog(@"Capture Screen");
   }
+  
+	png_structp png_struct_p;
+	png_infop png_info_p;
+	void (*convert)(unsigned char *, unsigned char *, XImage *);
+	unsigned char *drow = NULL, *srow;
+	int h;
 
-  int result = stbi_write_png("CaptureScreen.png", image->width, \
-               image->height, 3, rgb, image->width *  3);
-  NSLog(@"Capture Screen %d", result);
+	png_struct_p = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL,
+	                                       NULL);
+	png_info_p = png_create_info_struct(png_struct_p);
+
+	png_init_io(png_struct_p, fp);
+	
+	png_set_IHDR(png_struct_p, png_info_p, image->width, image->height, 8,
+	             PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
+	             PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+	             
+	png_write_info(png_struct_p, png_info_p);
+
+	srow = (unsigned char *)image->data;
+	drow = calloc(1, image->width * 4);
+
+	if(image->byte_order == LSBFirst)
+		convert = convertrow_lsb;
+	else
+		convert = convertrow_msb;
+
+	for(h = 0; h < image->height; h++) {
+		convert(drow, srow, image);
+		srow += image->bytes_per_line;
+		png_write_row(png_struct_p, drow);
+	}
+	png_write_end(png_struct_p, NULL);
+
+	free(drow);
+	png_free_data(png_struct_p, png_info_p, PNG_FREE_ALL, -1);
+	png_destroy_write_struct(&png_struct_p, NULL);
+  fclose(fp);
+
+//  NSBitmapImageRep *bitmapRep = [[NSBitmapImageRep alloc] initWithData:rgb];
+// Create an NSImage and add the bitmap rep to it...
+//NSImage *image2 = [[NSImage alloc] init];
+//[image2 addRepresentation:image];
+//[image2 writeToFile:@"/Users/armm77/Image@2x.png" atomically:NO];
+//[bitmapRep release];
+//bitmapRep = nil;
+
   XFree(image);
 }
 

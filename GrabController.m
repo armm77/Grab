@@ -18,8 +18,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-#import "GrabWork.h"
-#import "GrabController.h"
+#import <GrabController.h>
 
 @implementation GrabController
 
@@ -82,10 +81,8 @@
 
 - (void) showInfoPanel: (id)sender
 {
- if (!infoPanel)
-   {
-     if (![NSBundle loadNibNamed:@"InfoPanel" owner:self])
-       {
+ if (!infoPanel) {
+     if (![NSBundle loadNibNamed:@"InfoPanel" owner:self]) {
          NSLog (@"Faild to load InfoPanel.gorm");
          return;
        }
@@ -96,10 +93,8 @@
 
 - (void) showCursorPanel: (id)sender
 {
- if (!cursorPanel)
-   {
-     if (![NSBundle loadNibNamed:@"CursorTypes" owner:self])
-       {
+ if (!cursorPanel) {
+     if (![NSBundle loadNibNamed:@"CursorTypes" owner:self]) {
          NSLog (@"Faild to load CursorTypes.gorm");
          return;
        }
@@ -110,27 +105,14 @@
 
 - (void) showInspectorPanel: (id)sender
 {
- if (!inspectorPanel)
-   {
-     if (![NSBundle loadNibNamed:@"InspectorPanel" owner:self])
-       {
+ if (!inspectorPanel) {
+     if (![NSBundle loadNibNamed:@"InspectorPanel" owner:self]) {
          NSLog (@"Faild to load InspectorPanel.gorm");
          return;
        }
      [inspectorPanel center];
    }
  [inspectorPanel makeKeyAndOrderFront:nil];
-}
-
--(void) updateCountDownTime
-{
-  if (totalSeconds != 1) {
-     totalSeconds -= 1;
-     NSLog (@"Timer:%02d",totalSeconds);
-  } else {
-     [NSApp setApplicationIconImage:[NSImage imageNamed:@"CameraEyeFlash.tiff"]];
-     [_timer invalidate];
-  }
 }
 
 - (void) optionSelection: (id)sender
@@ -150,23 +132,22 @@
 - (void) optionScreen: (id)sender
 {
   NSLog(@"optionScreen");
-  [grabView setImage:[NSImage imageNamed:@"CameraNormal.tiff"]];
-  [grabView setNeedsDisplay:YES];
+  [grabView setImage:[NSImage imageNamed:[NSString
+                        stringWithFormat:@"CameraNormal.tiff"]]];
+  //[grabView setImage:[NSImage imageNamed:@"CameraNormal.tiff"]];
+  //[grabView setNeedsDisplay:YES];
 
   grabWork = [[GrabWork alloc] init];
   [grabWork captureScreen];
-
-//Se activa con el click del mouse y la captura se demora 2 seg
-//  totalSeconds = 2;
-//  _timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self
-//  selector:@selector(updateCountDownTime) userInfo:nil repeats:YES];
 }
 
 - (void) optionTimedScreen: (id)sender
 {
   NSLog(@"optionTimedScreen");
-  [grabView setImage:[NSImage imageNamed:@"CameraWatch.tiff"]];
-  [grabView setNeedsDisplay:YES];
+  [grabView setImage:[NSImage imageNamed:[NSString
+                        stringWithFormat:@"CameraNormal.tiff"]]];
+  //[grabView setImage:[NSImage imageNamed:@"CameraNormal.tiff"]];
+  //[grabView setNeedsDisplay:YES];
 
   grabWork = [[GrabWork alloc] init];
   [grabWork captureTimedScreen];

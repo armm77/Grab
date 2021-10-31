@@ -19,8 +19,7 @@
 */
 #import <AppKit/AppKit.h>
 #import <SystemKit/OSEScreen.h>
-#import "GrabView.h"
-#include <arpa/inet.h> // define tipos de variables uint32_t
+#import <GrabView.h>
 #include <sys/select.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +27,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
+#include <png.h>
 
 @interface GrabWork : NSObject
 {

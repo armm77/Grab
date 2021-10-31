@@ -28,8 +28,7 @@
     "HEADER_FILES" = (
 	"GrabController.h",
 	"GrabView.h",
-	"GrabWork.h",
-	"stb_image_write.h"
+	"GrabWork.h"
     );
     IMAGES = (
 	"CameraNormal.tiff",
@@ -66,7 +65,7 @@
 	"gnustep-base",
 	"gnustep-gui"
     );
-    LINKEROPTIONS = "-lX11 -lXcursor -lSystemKit -lDesktopKit";
+    LINKEROPTIONS = "-lX11 -lXcursor -lpng -lSystemKit -lDesktopKit";
     "LOCALIZED_RESOURCES" = (
     );
     MAININTERFACE = "Grab.gorm";

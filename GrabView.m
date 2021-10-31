@@ -1,8 +1,6 @@
 /*
    Project: Grab
-
    Author: Andres Morales
-
    Created: 2020-07-04 16:14:10 +0300 by armm77
 
    This program is free software; you can redistribute it and/or modify
@@ -19,29 +17,36 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-#import "GrabView.h"
-#import "GrabController.h"
+#import <GrabView.h>
+#import <GrabController.h>
 
 @implementation GrabView : NSView
-/*
+
+- (id) initWithFrame: (NSRect)frameRect
+{
+  [super initWithFrame: frameRect];
+  _appImage = [[NSImage imageNamed:@"Grab2.App.tiff"] copy];
+  NSLog(@"initWithFrame");
+  return self;
+}
+
 - (BOOL) acceptsFirstMouse: (NSEvent *)anEvent
 {
   return YES;
 }
-*/
+/*
 - (void) mouseUp: (NSEvent *)event
 {
   [self setImage:[NSImage imageNamed:[NSString
                     stringWithFormat:@"CameraNormal.tiff"]]];
   NSLog(@"MouseUp ");
-//  _appImage = [[NSImage imageNamed:@" "] copy];
 }
-
-- (id) initWithFrame: (NSRect)frameRect
+*/
+- (void) mouseDown: (NSEvent *)event
 {
-  [super initWithFrame: frameRect];
-  _appImage = [[NSImage imageNamed:@"Grab.App.tiff"] copy];
-  return self;
+  [self setImage:[NSImage imageNamed:[NSString
+                    stringWithFormat:@"CameraWatchFlash.tiff"]]];
+  NSLog(@"MouseDown");
 }
 
 - (void) drawRect: (NSRect)rect
@@ -52,7 +57,8 @@
                     operation:NSCompositeSourceOver];
   [_buttonImage compositeToPoint:NSMakePoint(0,0)
                        operation:NSCompositeSourceOver];
-
+  _appImage = [[NSImage imageNamed:@"Grab2.App.tiff"] copy];
+   NSLog(@"initWithFrame");
   [super drawRect:rect];
 }
 
@@ -63,7 +69,7 @@
   }
   _appImage = [[NSImage imageNamed:@" "] copy];
   _buttonImage = [image copy];
-  [_buttonImage setScalesWhenResized:NO];
+  //[_buttonImage setScalesWhenResized:NO];
   [self setNeedsDisplay:YES];
 }
 

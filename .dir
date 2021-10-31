@@ -1,0 +1,14 @@
+{
+    ShelfContents = {
+	(
+	    <*I0>,
+	    <*I0>
+	) = (
+	    "/Users/armm77/projects/apps-nextspace/Grab"
+	);
+    };
+    ShelfSize = <*I76>;
+    ViewerPath = "/";
+    ViewerType = Browser;
+    ViewerWindow = "{x = 976; y = 299; width = 622; height = 422}";
+}

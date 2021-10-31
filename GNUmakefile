@@ -65,8 +65,7 @@ Resources/Grab.App.tiff
 Grab_HEADER_FILES = \
 GrabController.h \
 GrabView.h \
-GrabWork.h \
-stb_image_write.h
+GrabWork.h
 
 #
 # Objective-C Class files
