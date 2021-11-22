@@ -1,7 +1,7 @@
 /*
    Project: Grab
    Author: Andres Morales
-   Created: 2020-07-04 16:14:10 +0300 by armm77
+   Created: 2021-05-12 16:14:10 +0300 by armm77
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,15 +18,12 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 #import <GrabView.h>
-#import <GrabController.h>
 
 @implementation GrabView : NSView
 
-- (id) initWithFrame: (NSRect)frameRect
+- (id) initWithFrame: (NSRect)rect
 {
-  [super initWithFrame: frameRect];
-  _appImage = [[NSImage imageNamed:@"Grab2.App.tiff"] copy];
-  NSLog(@"initWithFrame");
+  [super initWithFrame: rect];
   return self;
 }
 
@@ -34,16 +31,20 @@
 {
   return YES;
 }
-/*
-- (void) mouseUp: (NSEvent *)event
-{
-  [self setImage:[NSImage imageNamed:[NSString
-                    stringWithFormat:@"CameraNormal.tiff"]]];
-  NSLog(@"MouseUp ");
-}
-*/
+
 - (void) mouseDown: (NSEvent *)event
 {
+ /* switch ([event]) {
+    case captureScreen : {
+      grabWork = [[GrabWork alloc] init];
+      [grabWork captureScreen];
+      break;
+    }
+    default:
+      break;
+  }
+*/
+
   [self setImage:[NSImage imageNamed:[NSString
                     stringWithFormat:@"CameraWatchFlash.tiff"]]];
   NSLog(@"MouseDown");
@@ -53,12 +54,13 @@
 {
   [[NSImage imageNamed:@"common_Tile"] compositeToPoint:NSMakePoint(0,0)
                                               operation:NSCompositeSourceOver];
-  [_appImage compositeToPoint:NSMakePoint(8,8)
-                    operation:NSCompositeSourceOver];
   [_buttonImage compositeToPoint:NSMakePoint(0,0)
                        operation:NSCompositeSourceOver];
-  _appImage = [[NSImage imageNamed:@"Grab2.App.tiff"] copy];
-   NSLog(@"initWithFrame");
+  
+  [_appImage compositeToPoint:NSMakePoint(8,8)
+                    operation:NSCompositeSourceOver];
+  _appImage = [[NSImage imageNamed:@"Grab.App.tiff"] copy];
+  NSLog(@"drawRect");
   [super drawRect:rect];
 }
 
@@ -69,7 +71,6 @@
   }
   _appImage = [[NSImage imageNamed:@" "] copy];
   _buttonImage = [image copy];
-  //[_buttonImage setScalesWhenResized:NO];
   [self setNeedsDisplay:YES];
 }
 

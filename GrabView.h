@@ -1,7 +1,7 @@
 /*
    Project: Grab
    Author: Andres Morales
-   Created: 2020-07-04 16:14:10 +0300 by armm77
+   Created: 2021-05-12 16:14:10 +0300 by armm77
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 @interface GrabView : NSView
 {
+  
   NSImage *_appImage;
   NSImage *_buttonImage;
 }

@@ -1,7 +1,7 @@
 /*
    Project: Grab
    Author: Andres Morales
-   Created: 2020-07-04 16:14:10 +0300 by armm77
+   Created: 2021-05-12 16:14:10 +0300 by armm77
    Application Controller
 
    This program is free software; you can redistribute it and/or modify
@@ -125,6 +125,7 @@
 - (void) optionWindow: (id)sender
 {
   NSLog(@"optionWindow");
+  [grabView setImage:[NSImage imageNamed:@"CameraEye1.tiff"]];
   grabWork = [[GrabWork alloc] init];
   [grabWork captureWindow];
 }
@@ -132,10 +133,7 @@
 - (void) optionScreen: (id)sender
 {
   NSLog(@"optionScreen");
-  [grabView setImage:[NSImage imageNamed:[NSString
-                        stringWithFormat:@"CameraNormal.tiff"]]];
-  //[grabView setImage:[NSImage imageNamed:@"CameraNormal.tiff"]];
-  //[grabView setNeedsDisplay:YES];
+  [grabView setImage:[NSImage imageNamed:@"CameraNormal.tiff"]];
 
   grabWork = [[GrabWork alloc] init];
   [grabWork captureScreen];
@@ -144,10 +142,7 @@
 - (void) optionTimedScreen: (id)sender
 {
   NSLog(@"optionTimedScreen");
-  [grabView setImage:[NSImage imageNamed:[NSString
-                        stringWithFormat:@"CameraNormal.tiff"]]];
-  //[grabView setImage:[NSImage imageNamed:@"CameraNormal.tiff"]];
-  //[grabView setNeedsDisplay:YES];
+  [grabView setImage:[NSImage imageNamed:@"CameraWatch.tiff"]];
 
   grabWork = [[GrabWork alloc] init];
   [grabWork captureTimedScreen];
