@@ -2,7 +2,6 @@
 .DS_Store
 Grab.app
 Grab.pcproj.backup
-Grab.pcproj/armm.project
 Grab.pcproj/armm77.project
 Grab.pcproj/PC.project
 GNUmakefile~

@@ -20,7 +20,7 @@
     );
     COMPILEROPTIONS = "";
     CPPOPTIONS = "";
-    "CREATION_DATE" = "2020-07-04 16:14:10 +0300";
+    "CREATION_DATE" = "2021-05-12 16:14:10 +0300";
     "DOCU_FILES" = (
     );
     FRAMEWORKS = (
@@ -65,7 +65,7 @@
 	"gnustep-base",
 	"gnustep-gui"
     );
-    LINKEROPTIONS = "-lX11 -lXcursor -lpng -lSystemKit -lDesktopKit";
+    LINKEROPTIONS = "-lX11 -lXcursor -lpng";
     "LOCALIZED_RESOURCES" = (
     );
     MAININTERFACE = "Grab.gorm";
@@ -80,10 +80,10 @@
     "PROJECT_AUTHORS" = (
 	"Andres Morales"
     );
-    "PROJECT_COPYRIGHT" = "Copyright (C) 2020";
+    "PROJECT_COPYRIGHT" = "Copyright (C) 2021";
     "PROJECT_COPYRIGHT_DESC" = GPL;
     "PROJECT_CREATOR" = armm77;
-    "PROJECT_DESCRIPTION" = "for screen capture...";
+    "PROJECT_DESCRIPTION" = "app for screen capture...";
     "PROJECT_DOCUMENTTYPES" = (
     );
     "PROJECT_GROUP" = "No group avaliable!";
