@@ -21,36 +21,26 @@
 
 @implementation GrabWork : NSObject
 
-/* LSBFirst: BGRA -> RGBA */
-static void
-convertrow_lsb(unsigned char *drow, unsigned char *srow, XImage *image) {
-	int sx, dx;
+// Function to convert pixel data from BGRA to RGBA
+void convertBGRAtoRGBA(unsigned char *dest, unsigned char *src, int width, int height) {
+    int bytesPerPixel = 4; // Since we're dealing with BGRA to RGBA
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int pixelIndex = (y * width + x) * bytesPerPixel;
 
-	for(sx = 0, dx = 0; dx < image->bytes_per_line; sx += 4) {
-		drow[dx++] = srow[sx + 2]; /* B -> R */
-		drow[dx++] = srow[sx + 1]; /* G -> G */
-		drow[dx++] = srow[sx];     /* R -> B */
-		if(image->depth == 32)
-			drow[dx++] = srow[sx + 3]; /* A -> A */
-		else
-			drow[dx++] = 255;
-	}
-}
+            // Extract BGRA components from the source
+            unsigned char blue = src[pixelIndex];
+            unsigned char green = src[pixelIndex + 1];
+            unsigned char red = src[pixelIndex + 2];
+            unsigned char alpha = src[pixelIndex + 3];
 
-/* MSBFirst: ARGB -> RGBA */
-static void
-convertrow_msb(unsigned char *drow, unsigned char *srow, XImage *image) {
-	int sx, dx;
-
-	for(sx = 0, dx = 0; dx < image->bytes_per_line; sx += 4) {
-		drow[dx++] = srow[sx + 1]; /* G -> R */
-		drow[dx++] = srow[sx + 2]; /* B -> G */
-		drow[dx++] = srow[sx + 3]; /* A -> B */
-		if(image->depth == 32)
-			drow[dx++] = srow[sx]; /* R -> A */
-		else
-			drow[dx++] = 255;
-	}
+            // Store RGBA components in the destination
+            dest[pixelIndex] = red;
+            dest[pixelIndex + 1] = green;
+            dest[pixelIndex + 2] = blue;
+            dest[pixelIndex + 3] = alpha;
+        }
+    }
 }
 
 - (id) init 
@@ -95,7 +85,7 @@ convertrow_msb(unsigned char *drow, unsigned char *srow, XImage *image) {
 
 - (void) captureSelection
 {
- NSLog(@"To be implemented.");
+  NSLog(@"To be implemented.");
 }
 
 - (void) captureWindow
@@ -122,7 +112,7 @@ convertrow_msb(unsigned char *drow, unsigned char *srow, XImage *image) {
   XGetWindowAttributes(xDisplay, xRootWindow, &gwa);
   XImage *image = XGetImage(xDisplay, xRootWindow, 0, 0, \
                   gwa.width, gwa.height, AllPlanes, ZPixmap);
-
+    
   [self saveAsImage:image];
 }
 
@@ -136,56 +126,38 @@ convertrow_msb(unsigned char *drow, unsigned char *srow, XImage *image) {
 
 - (void) saveAsImage: (XImage *)image
 {
+  // Create buffers for the source (BGRA) and destination (RGBA) data
+  int bytesPerPixel = 4; // BGRA to RGBA means 4 bytes per pixel
+  unsigned char *rgbaData = (unsigned char *)malloc(image->width * image->height * bytesPerPixel);
+
+  // Convert BGRA to RGBA
+  convertBGRAtoRGBA(rgbaData, (unsigned char *)image->data, image->width, image->height);
+
+  // Create an NSBitmapImageRep from the converted RGBA data                
+  NSBitmapImageRep *bitmapRep = [[NSBitmapImageRep alloc]
+                                initWithBitmapDataPlanes: &rgbaData
+                                              pixelsWide: image->width
+                                              pixelsHigh: image->height
+                                           bitsPerSample: 8
+                                         samplesPerPixel: 4
+                                                hasAlpha: YES
+                                                isPlanar: NO
+                                          colorSpaceName: NSDeviceRGBColorSpace 
+                                            bitmapFormat: 0
+                                             bytesPerRow: image->width * bytesPerPixel 
+                                            bitsPerPixel: 32];
+                                          
+  // Create an NSImage from the bitmap representation
+  NSImage *screenImage = [[NSImage alloc] initWithSize: NSMakeSize(image->width, image->height)];
+  [screenImage addRepresentation:bitmapRep];
+
+  // Save the image as a TIFF 
+  //NSData *imageData = [bitmapRep TIFFRepresentation];
+  //[imageData writeToFile:@"capture_RGBA.tiff" atomically:YES]; 
   
-  FILE *fp;
-  fp = fopen("test.png", "w");
-  if (fp == NULL) {
-     	NSLog(@"Cannot open file.\n");
- 	    XDestroyImage(image); 
-  } else {
-    NSLog(@"Capture Screen");
-  }
-  
-	png_structp png_struct_p;
-	png_infop png_info_p;
-	void (*convert)(unsigned char *, unsigned char *, XImage *);
-	unsigned char *drow = NULL, *srow;
-	int h;
-
-	png_struct_p = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL,
-	                                       NULL);
-	png_info_p = png_create_info_struct(png_struct_p);
-
-	png_init_io(png_struct_p, fp);
-	
-	png_set_IHDR(png_struct_p, png_info_p, image->width, image->height, 8,
-	             PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
-	             PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-	             
-	png_write_info(png_struct_p, png_info_p);
-
-	srow = (unsigned char *)image->data;
-	drow = calloc(1, image->width * 4);
-
-	if(image->byte_order == LSBFirst)
-		convert = convertrow_lsb;
-	else
-		convert = convertrow_msb;
-
-	for(h = 0; h < image->height; h++) {
-		 convert(drow, srow, image);
-		 srow += image->bytes_per_line;
-		 png_write_row(png_struct_p, drow);
-	}
-
-	png_write_end(png_struct_p, NULL);
-
-	free(drow);
-	png_free_data(png_struct_p, png_info_p, PNG_FREE_ALL, -1);
-	png_destroy_write_struct(&png_struct_p, NULL);
-  fclose(fp);
-
-  XFree(image);
+  // Save the image as a PNG
+  NSData *imageDataPNG = [bitmapRep representationUsingType: NSPNGFileType properties:nil];
+  [imageDataPNG writeToFile:@"capture_RGBA.png" atomically:YES];
 }
 
 @end
