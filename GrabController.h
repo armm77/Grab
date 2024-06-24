@@ -2,7 +2,6 @@
    Project: Grab
    Author: Andres Morales
    Created: 2021-05-12 16:14:10 +0300 by armm77
-   Application Controller
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,42 +17,18 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
+#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#import <GrabView.h>
-#import <GrabWork.h>
 
-@interface GrabController : NSObject
-{
-  GrabView    *grabView;
-  GrabWork    *grabWork;
-  NSTimer     *_timer;
-
-  int totalSeconds;
-
-  id  infoPanel;
-  id  cursorPanel;
-  id  inspectorPanel;
+@interface GrabController : NSObject <NSApplicationDelegate> {
+  NSTimer *iconAnimationTimer;
+  NSArray *iconImages;
+  int currentFrame;
 }
 
-+ (void) initialize;
-
-- (id) init;
-- (void) dealloc;
-- (void) awakeFromNib;
-
-- (void) applicationDidFinishLaunching: (NSNotification *)aNotif;
-- (BOOL) applicationShouldTerminate: (id)sender;
-- (void) applicationWillTerminate: (NSNotification *)aNotif;
-- (BOOL) application: (NSApplication *)application
-            openFile: (NSString *)fileName;
-
-- (void) showInfoPanel: (id)sender;
-- (void) showCursorPanel: (id)sender;
-- (void) showInspectorPanel: (id)sender;
-
-- (void) optionSelection: (id)sender;
-- (void) optionWindow: (id)sender;
-- (void) optionScreen: (id)sender;
-- (void) optionTimedScreen: (id)sender;
+- (void)captureWindow:(id)sender;
+- (void)captureScreenSection:(id)sender;
+- (void)captureFullScreen:(id)sender;
 
 @end
+

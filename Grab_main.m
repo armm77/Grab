@@ -1,7 +1,7 @@
 /*
    Project: Grab
    Author: Andres Morales
-   Created: 2020-07-04 16:14:10 +0300 by armm77
+   Created: 2021-05-12 16:14:10 +0300 by armm77
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,10 +17,17 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-
+#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
+#import "GrabController.h"
 
-int main(int argc, const char *argv[])
-{
-  return NSApplicationMain (argc, argv);
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        [NSApplication sharedApplication];
+        GrabController *menuController = [[GrabController alloc] init];
+        [NSApp setDelegate:menuController];
+        [NSApp run];
+    }
+    return 0;
 }
+

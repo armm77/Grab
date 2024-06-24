@@ -27,7 +27,6 @@ PACKAGE_NAME = Grab
 APP_NAME = Grab
 Grab_APPLICATION_ICON = Grab.App.tiff
 
-
 #
 # Resource files
 #
@@ -36,6 +35,7 @@ Resources/Grab.gorm \
 Resources/InfoPanel.gorm \
 Resources/InspectorPanel.gorm \
 Resources/CursorTypes.gorm \
+Resources/Grab.App.tiff \
 Resources/CameraNormal.tiff \
 Resources/ArrowCursor.tiff \
 Resources/CameraEye1.tiff \
@@ -55,25 +55,21 @@ Resources/PiePieces.tiff \
 Resources/PlaceCursor.tiff \
 Resources/PointerCursor.tiff \
 Resources/SelectCursor.tiff \
-Resources/WaitCursor.tiff \
-Resources/Grab.App.tiff 
-
+Resources/WaitCursor.tiff
 
 #
 # Header files
 #
 Grab_HEADER_FILES = \
 GrabController.h \
-GrabView.h \
-GrabWork.h
+GrabDraw.h
 
 #
 # Objective-C Class files
 #
 Grab_OBJC_FILES = \
 GrabController.m \
-GrabView.m \
-GrabWork.m
+GrabDraw.m
 
 #
 # Other sources

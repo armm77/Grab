@@ -2,7 +2,6 @@
    Project: Grab
    Author: Andres Morales
    Created: 2021-05-12 16:14:10 +0300 by armm77
-   Application Controller
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,134 +17,298 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-#import <GrabController.h>
+#import "GrabController.h"
+#import "GrabDraw.h"
+#import <X11/Xlib.h>
+#import <X11/Xutil.h>
+#import <X11/cursorfont.h>
+#import <X11/extensions/Xfixes.h>
 
 @implementation GrabController
 
-+ (void) initialize
-{
-  NSMutableDictionary *defaults = [NSMutableDictionary dictionary];
+- (void)applicationDidFinishLaunching:(NSNotification *)notification {
 
-  /*
-   * Register your app's defaults here by adding objects to the
-   * dictionary, eg
-   *
-   * [defaults setObject:anObject forKey:keyForThatObject];
-   *
-   */
+    NSMenu *mainMenu = [[NSMenu alloc] initWithTitle:@"Grab"];
+    
+    NSMenu *menuInfo = [[NSMenu alloc] initWithTitle:@"Info"];
+    NSMenuItem *menuInfoItem = [[NSMenuItem alloc] initWithTitle:@"Info" action:nil keyEquivalent:@""];
+    [mainMenu addItem: menuInfoItem];
+    [mainMenu setSubmenu:menuInfo forItem: menuInfoItem];
+    [menuInfo addItemWithTitle:@"Info Panel..." action:@selector(orderFrontStandardInfoPanel:) keyEquivalent:@""];
+    [menuInfo addItemWithTitle:@"Turn Sound Off" action:@selector(orderFrontHelpPanel:) keyEquivalent:@""];
+    [menuInfo addItemWithTitle:@"Help..." action:@selector (orderFrontHelpPanel:) keyEquivalent: @"?"];
+        
+    NSMenu *menuOptions = [[NSMenu alloc] initWithTitle:@"Options"];
+    NSMenuItem *menuOptionsItem = [[NSMenuItem alloc] initWithTitle:@"Options" action:nil keyEquivalent:@""];
+    [mainMenu addItem: menuOptionsItem];
+    [mainMenu setSubmenu:menuOptions forItem: menuOptionsItem];
+    [menuOptions addItemWithTitle:@"Selection" action:@selector(captureScreenSection:) keyEquivalent:@"A"];
+    [menuOptions addItemWithTitle:@"Window" action:@selector(captureWindow:) keyEquivalent:@"W"];
+    [menuOptions addItemWithTitle:@"Screen" action:@selector(captureFullScreen:) keyEquivalent:@"z"];
+    [menuOptions addItemWithTitle:@"Timed Screen" action:@selector(captureTimedFullScreen:) keyEquivalent:@"Z"];
+    [menuOptions addItemWithTitle:@"Choose Cursor..." action:@selector(captureChooseCursor:) keyEquivalent:@""];
+    
+    NSMenu *menuDoc = [[NSMenu alloc] initWithTitle:@"Document"];
+    NSMenuItem *menuDocItem = [[NSMenuItem alloc] initWithTitle:@"Document" action:nil keyEquivalent:@""];
+    [mainMenu addItem: menuDocItem];
+    [mainMenu setSubmenu:menuDoc forItem: menuDocItem];
+    [menuDoc addItemWithTitle:@"Save" action:@selector(orderDocSave:) keyEquivalent:@"s"];
+    [menuDoc addItemWithTitle:@"Save As..." action:@selector(orderDocSaveAs:) keyEquivalent:@"S"];
+    [menuDoc addItemWithTitle:@"Close" action:@selector(orderDocClose:) keyEquivalent:@""];
+    
+    [mainMenu addItemWithTitle:@"Inspector..." action:@selector (orderFrontStandardInspector:) keyEquivalent: @"1"];
+    [mainMenu addItemWithTitle:@"Print..." action:@selector (orderFrontStandardPrint:) keyEquivalent: @"p"];
+    [mainMenu addItemWithTitle:@"Hide" action:@selector (orderFrontHide:) keyEquivalent: @"h"];
+    
+    [mainMenu addItemWithTitle:@"Quit" action:@selector(terminate:) keyEquivalent:@"q"];
 
-  [[NSUserDefaults standardUserDefaults] registerDefaults: defaults];
-  [[NSUserDefaults standardUserDefaults] synchronize];
+    [NSApp setMainMenu:mainMenu];
+
 }
 
-- (id) init
-{
-  if (!(self = [super init])) {
-    return nil;
-  }
-  return self;
+- (void)captureWindow:(id)sender {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        Display *display = XOpenDisplay(NULL);
+        if (!display) {
+            NSLog(@"Error: couldnt open screen X11.");
+            return;
+        }
+
+        Window root = DefaultRootWindow(display);
+        Cursor cursor = XCreateFontCursor(display, XC_hand2);
+        XGrabPointer(display, root, False, ButtonPressMask, GrabModeSync, GrabModeAsync, None, cursor, CurrentTime);
+
+        XEvent event;
+        XAllowEvents(display, SyncPointer, CurrentTime);
+        XNextEvent(display, &event);
+
+        Window window = event.xbutton.subwindow;
+        if (window == None) {
+            NSLog(@"No window selected.");
+            XUngrabPointer(display, CurrentTime);
+            XCloseDisplay(display);
+            return;
+        }
+
+        XUngrabPointer(display, CurrentTime);
+
+        NSImage *image = [GrabDraw captureWindowWithID:window display:display];
+        if (!image) {
+            NSLog(@"Error: couldn't capture window image.");
+            XCloseDisplay(display);
+            return;
+        }
+
+        NSString *filePath = @"captura_ventana.png";
+        NSData *imageData = [image TIFFRepresentation];
+        NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+        NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
+        if ([pngData writeToFile:filePath atomically:YES]) {
+            NSLog(@"Window screenshot saved in %@", filePath);
+        } else {
+            NSLog(@"Error saving image.");
+        }
+
+        XCloseDisplay(display);
+    });
 }
 
-- (void) awakeFromNib
-{
-  if (grabView)
-    return;
+- (void)captureScreenSection:(id)sender {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        Display *display = XOpenDisplay(NULL);
+        if (!display) {
+            NSLog(@"Error: couldn't open screen X11.");
+            return;
+        }
 
-  grabView = [[GrabView alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
-  [[NSApp iconWindow] setContentView:grabView];
+        Window root = DefaultRootWindow(display);
+
+        if (XGrabPointer(display, root, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+                         GrabModeAsync, GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {
+            NSLog(@"Error: couldn't capture pointer.");
+            XCloseDisplay(display);
+            return;
+        }
+    
+    int done = 0, ret = 0;
+    int rx = 0, ry = 0, btn_pressed = 0;
+    int rect_x = 0, rect_y = 0, rect_w = 0, rect_h = 0;
+
+    Cursor cursor    = XCreateFontCursor(display, XC_crosshair);
+    Cursor cursor_nw = XCreateFontCursor(display, XC_ul_angle);
+    Cursor cursor_ne = XCreateFontCursor(display, XC_ur_angle);
+    Cursor cursor_se = XCreateFontCursor(display, XC_lr_angle);
+    Cursor cursor_sw = XCreateFontCursor(display, XC_ll_angle);
+
+    XGCValues gcval;
+    gcval.foreground = XWhitePixel(display, 0);
+    gcval.function   = GXxor;
+    gcval.background = XBlackPixel(display, 0);
+    gcval.plane_mask = gcval.background ^ gcval.foreground;
+    gcval.subwindow_mode = IncludeInferiors;
+
+    GC gc = XCreateGC(display, root,
+                      GCFunction|GCForeground|GCBackground|GCSubwindowMode,
+                      &gcval);
+
+    //LineSolid	- LineOnOffDash	- LineDoubleDash
+    XSetLineAttributes(display, gc, 2, LineSolid, CapButt, JoinMiter);
+
+    ret = XGrabPointer(
+        display, root, False,
+        ButtonMotionMask | ButtonPressMask | ButtonReleaseMask,
+        GrabModeAsync, GrabModeAsync, root, cursor, CurrentTime);
+
+    if (ret != GrabSuccess)
+        NSLog(@"Error: couldn't grab pointer\n");
+
+    ret = XGrabKeyboard(display, root, False, GrabModeAsync, GrabModeAsync, CurrentTime);
+    if (ret != GrabSuccess)
+        NSLog(@"Error: couldn't grab keyboard\n");
+
+    XEvent ev;
+    int grabmask = ButtonMotionMask | ButtonReleaseMask;
+    while (1) {
+        while (!done && XPending(display)) {
+            XNextEvent(display, &ev);
+
+            switch (ev.type) {
+            case MotionNotify:
+                if (btn_pressed) {
+                    if (rect_w)
+                        XDrawRectangle(display, root, gc, rect_x, rect_y, rect_w, rect_h);
+
+                    rect_x = rx;
+                    rect_y = ry;
+                    rect_w = ev.xmotion.x - rect_x;
+                    rect_h = ev.xmotion.y - rect_y;
+
+                    // Change the cursor to show we're selecting a region
+                    if (rect_w < 0 && rect_h < 0)
+                        XChangeActivePointerGrab(display, grabmask, cursor_nw, CurrentTime);
+                    else if (rect_w < 0 && rect_h > 0)
+                        XChangeActivePointerGrab(display, grabmask, cursor_sw, CurrentTime);
+                    else if (rect_w > 0 && rect_h < 0)
+                        XChangeActivePointerGrab(display, grabmask, cursor_ne, CurrentTime);
+                    else if (rect_w > 0 && rect_h > 0)
+                        XChangeActivePointerGrab(display, grabmask, cursor_se, CurrentTime);
+
+                    if (rect_w < 0) {
+                        rect_x += rect_w;
+                        rect_w = 0 - rect_w;
+                    }
+                    if (rect_h < 0) {
+                        rect_y += rect_h;
+                        rect_h = 0 - rect_h;
+                    }
+
+                    // draw rectangle
+                    XDrawRectangle(display, root, gc, rect_x, rect_y, rect_w, rect_h);
+                    XFlush(display);
+                }
+                break;
+            case ButtonRelease:
+                done = 1;
+                break;
+            case ButtonPress:
+                btn_pressed = 1;
+                rx = ev.xbutton.x;
+                ry = ev.xbutton.y;
+                break;
+            case KeyPress:
+                NSLog(@"key pressed, aborting selection\n");
+                done = 2;
+                break;
+            case KeyRelease:
+                /* ignore */
+                break;
+            default:
+                break;
+            }
+        }
+        if (done)
+            break;
+
+    }
+
+    Window root_win;
+    unsigned int root_w = 0, root_h = 0, root_b, root_d;
+    int root_x = 0, root_y = 0;
+
+    ret = XGetGeometry(display, root, &root_win, &root_x, &root_y,
+                       &root_w, &root_h, &root_b, &root_d);
+    if (ret == False)
+        NSLog(@"error: failed to get root window geometry\n");
+
+    if (rect_w) {
+        XDrawRectangle(display, root, gc, rect_x, rect_y, rect_w, rect_h);
+        XFlush(display);
+    }
+
+    NSRect rect = NSMakeRect(rect_x, rect_y, rect_w, rect_h);
+    NSImage *image = [GrabDraw captureScreenRect:rect display:display];
+    if (!image) {
+        NSLog(@"Could not capture section of screen image.");
+        XCloseDisplay(display);
+        return;
+    }
+
+    NSString *filePath = @"captura_seccion.png";
+    NSData *imageData = [image TIFFRepresentation];
+    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+    NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
+    if ([pngData writeToFile:filePath atomically:YES]) {
+        NSLog(@"Full screenshot saved to %@", filePath);
+        //NSLog(@"\n x:%d\n y:%d\n wide:%d\n height:%d\n", rect_x, rect_y, rect_w, rect_h);
+    } else {
+        NSLog(@"Error saving image.");
+    }
+
+    XClearWindow(display, root);
+    XUngrabPointer(display, CurrentTime);
+    XUngrabKeyboard(display, CurrentTime);
+    XFreeCursor(display, cursor);
+    XFreeGC(display, gc);
+    XSync(display, True);
+    XUngrabServer(display);
+    XCloseDisplay(display);
+    });
 }
 
-- (void) dealloc
-{
-  [super dealloc];
+- (void)captureFullScreen:(id)sender {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        Display *display = XOpenDisplay(NULL);
+        if (!display) {
+            NSLog(@"Could not open screen X11.");
+            return;
+        }
+
+        Window root = DefaultRootWindow(display);
+        XWindowAttributes gwa;
+        XGetWindowAttributes(display, root, &gwa);
+
+        NSRect rect = NSMakeRect(0, 0, gwa.width, gwa.height);
+        NSImage *image = [GrabDraw captureScreenRect:rect display:display];
+        if (!image) {
+            NSLog(@"Could not capture screen image.");
+            XCloseDisplay(display);
+            return;
+        }
+
+        NSString *filePath = @"captura_pantalla_completa.png";
+        NSData *imageData = [image TIFFRepresentation];
+        NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+        NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
+        if ([pngData writeToFile:filePath atomically:YES]) {
+            NSLog(@"Full screenshot saved to %@", filePath);
+        } else {
+            NSLog(@"Error saving image.");
+        }
+
+        XCloseDisplay(display);
+    });
 }
 
-- (void) applicationDidFinishLaunching: (NSNotification *)aNotif
-{
-}
-
-- (BOOL) applicationShouldTerminate: (id)sender
-{
-  return YES;
-}
-
-- (void) applicationWillTerminate: (NSNotification *)aNotif
-{
-}
-
-- (BOOL) application: (NSApplication *)application
-            openFile: (NSString *)fileName
-{
-  return NO;
-}
-
-- (void) showInfoPanel: (id)sender
-{
- if (!infoPanel) {
-     if (![NSBundle loadNibNamed:@"InfoPanel" owner:self]) {
-         NSLog (@"Faild to load InfoPanel.gorm");
-         return;
-       }
-     [infoPanel center];
-   }
- [infoPanel makeKeyAndOrderFront:nil];
-}
-
-- (void) showCursorPanel: (id)sender
-{
- if (!cursorPanel) {
-     if (![NSBundle loadNibNamed:@"CursorTypes" owner:self]) {
-         NSLog (@"Faild to load CursorTypes.gorm");
-         return;
-       }
-     [cursorPanel center];
-   }
- [cursorPanel makeKeyAndOrderFront:nil];
-}
-
-- (void) showInspectorPanel: (id)sender
-{
- if (!inspectorPanel) {
-     if (![NSBundle loadNibNamed:@"InspectorPanel" owner:self]) {
-         NSLog (@"Faild to load InspectorPanel.gorm");
-         return;
-       }
-     [inspectorPanel center];
-   }
- [inspectorPanel makeKeyAndOrderFront:nil];
-}
-
-- (void) optionSelection: (id)sender
-{
-  NSLog(@"optionSelection");
-  grabWork = [[GrabWork alloc] init];
-  [grabWork captureSelection];
-}
-
-- (void) optionWindow: (id)sender
-{
-  NSLog(@"optionWindow");
-  [grabView setImage:[NSImage imageNamed:@"CameraEye1.tiff"]];
-  grabWork = [[GrabWork alloc] init];
-  [grabWork captureWindow];
-}
-
-- (void) optionScreen: (id)sender
-{
-  NSLog(@"optionScreen");
-  [grabView setImage:[NSImage imageNamed:@"CameraNormal.tiff"]];
-
-  grabWork = [[GrabWork alloc] init];
-  [grabWork captureScreen];
-}
-
-- (void) optionTimedScreen: (id)sender
-{
-  NSLog(@"optionTimedScreen");
-  [grabView setImage:[NSImage imageNamed:@"CameraWatch.tiff"]];
-
-  grabWork = [[GrabWork alloc] init];
-  [grabWork captureTimedScreen];
-}
 
 @end
+

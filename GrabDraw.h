@@ -17,34 +17,12 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
+#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#import <GrabView.h>
-#include <sys/select.h>
-#include <stdio.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/cursorfont.h>
+#import <X11/Xlib.h>
 
-@interface GrabWork : NSObject
-{
-  GrabView *grabView;
-  NSString *_imagePath;
-  NSCursor *_cursor;
-  NSTimer  *_timer;
-
-  Display  *xDisplay;
-  Window    xRootWindow;
-  
-  int totalSeconds;
-}
-
-- (void) saveAsImage: (XImage *)image;
-- (void) updateCountDownTime;
-
-- (void) captureSelection;
-- (void) captureWindow;
-- (void) captureScreen;
-- (void) captureTimedScreen;
-
+@interface GrabDraw : NSObject
++ (NSImage *)captureWindowWithID:(Window)window display:(Display *)display;
++ (NSImage *)captureScreenRect:(NSRect)rect display:(Display *)display;
 @end
+
