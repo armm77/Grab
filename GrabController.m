@@ -26,47 +26,12 @@
 
 @implementation GrabController
 
-- (void)applicationDidFinishLaunching:(NSNotification *)notification {
-
-    NSMenu *mainMenu = [[NSMenu alloc] initWithTitle:@"Grab"];
-    
-    NSMenu *menuInfo = [[NSMenu alloc] initWithTitle:@"Info"];
-    NSMenuItem *menuInfoItem = [[NSMenuItem alloc] initWithTitle:@"Info" action:nil keyEquivalent:@""];
-    [mainMenu addItem: menuInfoItem];
-    [mainMenu setSubmenu:menuInfo forItem: menuInfoItem];
-    [menuInfo addItemWithTitle:@"Info Panel..." action:@selector(orderFrontStandardInfoPanel:) keyEquivalent:@""];
-    [menuInfo addItemWithTitle:@"Turn Sound Off" action:@selector(orderFrontHelpPanel:) keyEquivalent:@""];
-    [menuInfo addItemWithTitle:@"Help..." action:@selector (orderFrontHelpPanel:) keyEquivalent: @"?"];
-        
-    NSMenu *menuOptions = [[NSMenu alloc] initWithTitle:@"Options"];
-    NSMenuItem *menuOptionsItem = [[NSMenuItem alloc] initWithTitle:@"Options" action:nil keyEquivalent:@""];
-    [mainMenu addItem: menuOptionsItem];
-    [mainMenu setSubmenu:menuOptions forItem: menuOptionsItem];
-    [menuOptions addItemWithTitle:@"Selection" action:@selector(captureScreenSection:) keyEquivalent:@"A"];
-    [menuOptions addItemWithTitle:@"Window" action:@selector(captureWindow:) keyEquivalent:@"W"];
-    [menuOptions addItemWithTitle:@"Screen" action:@selector(captureFullScreen:) keyEquivalent:@"z"];
-    [menuOptions addItemWithTitle:@"Timed Screen" action:@selector(captureTimedFullScreen:) keyEquivalent:@"Z"];
-    [menuOptions addItemWithTitle:@"Choose Cursor..." action:@selector(captureChooseCursor:) keyEquivalent:@""];
-    
-    NSMenu *menuDoc = [[NSMenu alloc] initWithTitle:@"Document"];
-    NSMenuItem *menuDocItem = [[NSMenuItem alloc] initWithTitle:@"Document" action:nil keyEquivalent:@""];
-    [mainMenu addItem: menuDocItem];
-    [mainMenu setSubmenu:menuDoc forItem: menuDocItem];
-    [menuDoc addItemWithTitle:@"Save" action:@selector(orderDocSave:) keyEquivalent:@"s"];
-    [menuDoc addItemWithTitle:@"Save As..." action:@selector(orderDocSaveAs:) keyEquivalent:@"S"];
-    [menuDoc addItemWithTitle:@"Close" action:@selector(orderDocClose:) keyEquivalent:@""];
-    
-    [mainMenu addItemWithTitle:@"Inspector..." action:@selector (orderFrontStandardInspector:) keyEquivalent: @"1"];
-    [mainMenu addItemWithTitle:@"Print..." action:@selector (orderFrontStandardPrint:) keyEquivalent: @"p"];
-    [mainMenu addItemWithTitle:@"Hide" action:@selector (orderFrontHide:) keyEquivalent: @"h"];
-    
-    [mainMenu addItemWithTitle:@"Quit" action:@selector(terminate:) keyEquivalent:@"q"];
-
-    [NSApp setMainMenu:mainMenu];
-
+- (void) applicationDidFinishLaunching: (NSNotification *)notification 
+{
 }
 
-- (void)captureWindow:(id)sender {
+- (void) captureWindow: (id)sender 
+{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
         if (!display) {
@@ -99,21 +64,12 @@
             return;
         }
 
-        NSString *filePath = @"captura_ventana.png";
-        NSData *imageData = [image TIFFRepresentation];
-        NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-        NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
-        if ([pngData writeToFile:filePath atomically:YES]) {
-            NSLog(@"Window screenshot saved in %@", filePath);
-        } else {
-            NSLog(@"Error saving image.");
-        }
-
         XCloseDisplay(display);
     });
 }
 
-- (void)captureScreenSection:(id)sender {
+- (void) captureScreenSection: (id)sender 
+{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
         if (!display) {
@@ -245,23 +201,13 @@
         XFlush(display);
     }
 
+    //NSLog(@"\n x:%d\n y:%d\n wide:%d\n height:%d\n", rect_x, rect_y, rect_w, rect_h);
     NSRect rect = NSMakeRect(rect_x, rect_y, rect_w, rect_h);
     NSImage *image = [GrabDraw captureScreenRect:rect display:display];
     if (!image) {
         NSLog(@"Could not capture section of screen image.");
         XCloseDisplay(display);
         return;
-    }
-
-    NSString *filePath = @"captura_seccion.png";
-    NSData *imageData = [image TIFFRepresentation];
-    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-    NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
-    if ([pngData writeToFile:filePath atomically:YES]) {
-        NSLog(@"Full screenshot saved to %@", filePath);
-        //NSLog(@"\n x:%d\n y:%d\n wide:%d\n height:%d\n", rect_x, rect_y, rect_w, rect_h);
-    } else {
-        NSLog(@"Error saving image.");
     }
 
     XClearWindow(display, root);
@@ -275,7 +221,7 @@
     });
 }
 
-- (void)captureFullScreen:(id)sender {
+- (void) captureFullScreen: (id)sender {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
         if (!display) {
@@ -295,20 +241,50 @@
             return;
         }
 
-        NSString *filePath = @"captura_pantalla_completa.png";
-        NSData *imageData = [image TIFFRepresentation];
-        NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-        NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
-        if ([pngData writeToFile:filePath atomically:YES]) {
-            NSLog(@"Full screenshot saved to %@", filePath);
-        } else {
-            NSLog(@"Error saving image.");
-        }
-
         XCloseDisplay(display);
     });
 }
 
+- (void) captureTimedScreen: (id)sender 
+{
+    NSLog(@"To be implemented.");
+}
+
+- (void) showInfoPanel: (id)sender
+{
+ if (!infoPanel) {
+     if (![NSBundle loadNibNamed:@"InfoPanel" owner:self]) {
+         NSLog (@"Faild to load InfoPanel.gorm");
+         return;
+       }
+     [infoPanel center];
+   }
+ [infoPanel makeKeyAndOrderFront:nil];
+}
+
+- (void) showCursorPanel: (id)sender
+{
+ if (!cursorPanel) {
+     if (![NSBundle loadNibNamed:@"CursorTypes" owner:self]) {
+         NSLog (@"Faild to load CursorTypes.gorm");
+         return;
+       }
+     [cursorPanel center];
+   }
+ [cursorPanel makeKeyAndOrderFront:nil];
+}
+
+- (void) showInspectorPanel: (id)sender
+{
+ if (!inspectorPanel) {
+     if (![NSBundle loadNibNamed:@"InspectorPanel" owner:self]) {
+         NSLog (@"Faild to load InspectorPanel.gorm");
+         return;
+       }
+     [inspectorPanel center];
+   }
+ [inspectorPanel makeKeyAndOrderFront:nil];
+}
 
 @end
 

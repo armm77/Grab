@@ -21,14 +21,23 @@
 #import <AppKit/AppKit.h>
 
 @interface GrabController : NSObject <NSApplicationDelegate> {
+  id  infoPanel;
+  id  cursorPanel;
+  id  inspectorPanel;
+
   NSTimer *iconAnimationTimer;
   NSArray *iconImages;
   int currentFrame;
 }
 
-- (void)captureWindow:(id)sender;
-- (void)captureScreenSection:(id)sender;
-- (void)captureFullScreen:(id)sender;
+- (void) captureWindow:(id)sender;
+- (void) captureScreenSection:(id)sender;
+- (void) captureFullScreen:(id)sender;
+- (void) captureTimedScreen:(id)sender;
+
+- (void) showInfoPanel:(id)sender;
+- (void) showCursorPanel:(id)sender;
+- (void) showInspectorPanel:(id)sender;
 
 @end
 

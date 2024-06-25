@@ -17,10 +17,12 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-#import "GrabDraw.h"
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #import <X11/Xlib.h>
 #import <X11/Xutil.h>
-#import <AppKit/AppKit.h>
+#import <time.h>
+#import "GrabDraw.h"
 
 @implementation GrabDraw
 
@@ -58,6 +60,21 @@
         }
     }
 
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
+    NSString *dateString = [formatter stringFromDate:[NSDate date]];
+    [formatter release];
+
+    NSString *fileName = [NSString stringWithFormat:@"screenshot_%@.png", dateString];
+    NSData *imageData = [imageRep TIFFRepresentation];
+    NSBitmapImageRep *imageSave = [NSBitmapImageRep imageRepWithData:imageData];
+    NSData *pngData = [imageSave representationUsingType:NSPNGFileType properties:@{}];
+    if ([pngData writeToFile:fileName atomically:YES]) {
+        NSLog(@"Screenshot saved to %@", fileName);
+    } else {
+        NSLog(@"Error saving image.");
+    }
+
     XDestroyImage(image);
     NSImage *nsImage = [[NSImage alloc] init];
     [nsImage addRepresentation:imageRep];
@@ -66,7 +83,8 @@
 
 + (NSImage *)captureScreenRect:(NSRect)rect display:(Display *)display {
     Window root = DefaultRootWindow(display);
-    XImage *image = XGetImage(display, root, (int)rect.origin.x, (int)rect.origin.y, (unsigned int)rect.size.width, (unsigned int)rect.size.height, AllPlanes, ZPixmap);
+    XImage *image = XGetImage(display, root, (int)rect.origin.x, (int)rect.origin.y, 
+                             (unsigned int)rect.size.width, (unsigned int)rect.size.height, AllPlanes, ZPixmap);
     if (!image) {
         NSLog(@"Could not get image of screen section.");
         return nil;
@@ -94,6 +112,21 @@
             data[index + 2] = (pixel & 0x0000FF);       // Blue
             data[index + 3] = 0xFF;                     // Alpha
         }
+    }
+
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
+    NSString *dateString = [formatter stringFromDate:[NSDate date]];
+    [formatter release];
+
+    NSString *fileName = [NSString stringWithFormat:@"screenshot_%@.png", dateString];
+    NSData *imageData = [imageRep TIFFRepresentation];
+    NSBitmapImageRep *imageSave = [NSBitmapImageRep imageRepWithData:imageData];
+    NSData *pngData = [imageSave representationUsingType:NSPNGFileType properties:@{}];
+    if ([pngData writeToFile:fileName atomically:YES]) {
+        NSLog(@"Screenshot saved to %@", fileName);
+    } else {
+        NSLog(@"Error saving image.");
     }
 
     XDestroyImage(image);

@@ -22,12 +22,13 @@
 #import "GrabController.h"
 
 int main(int argc, const char * argv[]) {
-    @autoreleasepool {
+    /*@autoreleasepool {
         [NSApplication sharedApplication];
         GrabController *menuController = [[GrabController alloc] init];
         [NSApp setDelegate:menuController];
         [NSApp run];
     }
-    return 0;
+    return 0; */
+    return NSApplicationMain (argc, argv);
 }
 

@@ -2,7 +2,9 @@
     "## Comment" = "Do NOT change this file, Gorm maintains it";
     FirstResponder = {
 	Actions = (
+	    "captureFullScreen:",
 	    "captureScreen:",
+	    "captureScreenSection:",
 	    "captureSelection:",
 	    "captureTimedScreen:",
 	    "captureWindow:",
@@ -19,17 +21,13 @@
     };
     GrabController = {
 	Actions = (
+	    "captureWindow:",
+	    "captureScreenSection:",
+	    "captureFullScreen:",
+	    "captureTimedScreen:",
 	    "showInfoPanel:",
 	    "showCursorPanel:",
-	    "showInspectorPanel:",
-	    "optionSelection:",
-	    "captureSelection:",
-	    "optionWindow:",
-	    "captureWindow:",
-	    "optionScreen:",
-	    "captureScreen:",
-	    "optionTimedScreen:",
-	    "captureTimedScreen:"
+	    "showInspectorPanel:"
 	);
 	Outlets = (
 	    infoPanel,
