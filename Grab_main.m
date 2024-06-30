@@ -21,14 +21,8 @@
 #import <AppKit/AppKit.h>
 #import "GrabController.h"
 
-int main(int argc, const char * argv[]) {
-    /*@autoreleasepool {
-        [NSApplication sharedApplication];
-        GrabController *menuController = [[GrabController alloc] init];
-        [NSApp setDelegate:menuController];
-        [NSApp run];
-    }
-    return 0; */
+int main(int argc, const char * argv[]) 
+{
     return NSApplicationMain (argc, argv);
 }
 

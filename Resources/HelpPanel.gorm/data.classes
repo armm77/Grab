@@ -3,16 +3,9 @@
     FirstResponder = {
 	Actions = (
 	    "captureFullScreen:",
-	    "captureScreen:",
 	    "captureScreenSection:",
-	    "captureSelection:",
 	    "captureTimedScreen:",
 	    "captureWindow:",
-	    "newAction:",
-	    "optionScreen:",
-	    "optionSelection:",
-	    "optionTimedScreen:",
-	    "optionWindow:",
 	    "showCursorPanel:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",

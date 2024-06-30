@@ -24,17 +24,20 @@
   id  infoPanel;
   id  cursorPanel;
   id  inspectorPanel;
-
-  NSTimer *iconAnimationTimer;
-  NSArray *iconImages;
-  int currentFrame;
+  
+  NSTextView *textView;
 }
+
+@property (nonatomic, strong) NSTimer *countdownTimer;
+@property (nonatomic, assign) NSInteger countdown;
 
 - (void) captureWindow:(id)sender;
 - (void) captureScreenSection:(id)sender;
 - (void) captureFullScreen:(id)sender;
 - (void) captureTimedScreen:(id)sender;
+- (void) updateCountdown;
 
+- (void) showHelpPanel:(id)sender;
 - (void) showInfoPanel:(id)sender;
 - (void) showCursorPanel:(id)sender;
 - (void) showInspectorPanel:(id)sender;

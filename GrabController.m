@@ -30,7 +30,7 @@
 {
 }
 
-- (void) captureWindow: (id)sender 
+- (void) captureWindow:(id)sender
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
@@ -68,7 +68,7 @@
     });
 }
 
-- (void) captureScreenSection: (id)sender 
+- (void) captureScreenSection:(id)sender
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
@@ -87,7 +87,7 @@
         }
     
     int done = 0, ret = 0;
-    int rx = 0, ry = 0, btn_pressed = 0;
+    int rx = 0, ry = 0, btn_pressed = 0/*, test_x=0, test_y=0*/;
     int rect_x = 0, rect_y = 0, rect_w = 0, rect_h = 0;
 
     Cursor cursor    = XCreateFontCursor(display, XC_crosshair);
@@ -138,6 +138,8 @@
                     rect_y = ry;
                     rect_w = ev.xmotion.x - rect_x;
                     rect_h = ev.xmotion.y - rect_y;
+                    //test_x = ev.xmotion.x;
+                    //test_y = ev.xmotion.y;
 
                     // Change the cursor to show we're selecting a region
                     if (rect_w < 0 && rect_h < 0)
@@ -149,6 +151,8 @@
                     else if (rect_w > 0 && rect_h > 0)
                         XChangeActivePointerGrab(display, grabmask, cursor_se, CurrentTime);
 
+                    XClearWindow(display, root);
+
                     if (rect_w < 0) {
                         rect_x += rect_w;
                         rect_w = 0 - rect_w;
@@ -158,8 +162,17 @@
                         rect_h = 0 - rect_h;
                     }
 
+                    // dimensiones 
+                    //char dimensions[32];
+                    //snprintf(dimensions, sizeof(dimensions), "%d x %d", abs(test_x - rx), abs(test_y - ry));
+                    //XDrawString(display, root, gc, test_x + 15, test_y +15, dimensions, strlen(dimensions));
+                    //NSLog(@"%d x %d", test_x, test_y);
+                    // dimensiones
+
                     // draw rectangle
                     XDrawRectangle(display, root, gc, rect_x, rect_y, rect_w, rect_h);
+
+
                     XFlush(display);
                 }
                 break;
@@ -201,7 +214,6 @@
         XFlush(display);
     }
 
-    //NSLog(@"\n x:%d\n y:%d\n wide:%d\n height:%d\n", rect_x, rect_y, rect_w, rect_h);
     NSRect rect = NSMakeRect(rect_x, rect_y, rect_w, rect_h);
     NSImage *image = [GrabDraw captureScreenRect:rect display:display];
     if (!image) {
@@ -221,7 +233,8 @@
     });
 }
 
-- (void) captureFullScreen: (id)sender {
+- (void) captureFullScreen:(id)sender
+{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
         if (!display) {
@@ -245,45 +258,94 @@
     });
 }
 
-- (void) captureTimedScreen: (id)sender 
+- (void) captureTimedScreen:(id)sender
 {
-    NSLog(@"To be implemented.");
+  [self startCountdown];
 }
 
-- (void) showInfoPanel: (id)sender
+- (void) startCountdown 
 {
- if (!infoPanel) {
-     if (![NSBundle loadNibNamed:@"InfoPanel" owner:self]) {
-         NSLog (@"Faild to load InfoPanel.gorm");
-         return;
-       }
-     [infoPanel center];
-   }
- [infoPanel makeKeyAndOrderFront:nil];
+  self.countdown = 10;
+  self.countdownTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                                         target:self
+                                                       selector:@selector(updateCountdown)
+                                                       userInfo:nil
+                                                        repeats:YES];
 }
 
-- (void) showCursorPanel: (id)sender
+- (void) dealloc
 {
- if (!cursorPanel) {
-     if (![NSBundle loadNibNamed:@"CursorTypes" owner:self]) {
-         NSLog (@"Faild to load CursorTypes.gorm");
-         return;
-       }
-     [cursorPanel center];
-   }
- [cursorPanel makeKeyAndOrderFront:nil];
+  [self stopCountdown];
+  [super dealloc];
 }
 
-- (void) showInspectorPanel: (id)sender
+- (void) updateCountdown
 {
- if (!inspectorPanel) {
-     if (![NSBundle loadNibNamed:@"InspectorPanel" owner:self]) {
-         NSLog (@"Faild to load InspectorPanel.gorm");
-         return;
-       }
-     [inspectorPanel center];
-   }
- [inspectorPanel makeKeyAndOrderFront:nil];
+  self.countdown--;
+  //NSLog(@"Countdown: %ld", (long)self.countdown);
+  if (self.countdown == 0) {
+     [self stopCountdown];
+     [self captureFullScreen:self];
+  }
+}
+
+- (void) stopCountdown 
+{
+  [self.countdownTimer invalidate];
+  self.countdownTimer = nil;
+}
+
+- (void) showHelpPanel:(id)sender
+{
+    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"HelpPanel" ofType:@"rtf"];
+    if (filePath) {
+        NSString *fileContents = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:NULL];
+        if (fileContents) {
+            NSTextStorage *textStorage = [textView textStorage];
+            [textStorage replaceCharactersInRange:NSMakeRange(0, [textStorage length]) withString:fileContents];
+        } else {
+            NSLog(@"Error reading file: %@", filePath);
+        }
+    } else {
+        NSLog(@"File not found: HelpPanel.rtf");
+    }
+}
+
+
+- (void) showInfoPanel:(id)sender
+{
+  if (!infoPanel) {
+      if (![NSBundle loadNibNamed:@"InfoPanel" owner:self]) {
+          NSLog (@"Faild to load InfoPanel.gorm");
+          return;
+        }
+      [infoPanel center];
+    }
+  [infoPanel makeKeyAndOrderFront:nil];
+}
+
+- (void) showCursorPanel:(id)sender
+{
+  if (!cursorPanel) {
+      if (![NSBundle loadNibNamed:@"CursorTypes" owner:self]) {
+          NSLog (@"Faild to load CursorTypes.gorm");
+          return;
+        }
+      [cursorPanel center];
+    }
+  [cursorPanel makeKeyAndOrderFront:nil];
+}
+
+- (void) showInspectorPanel:(id)sender
+{
+  if (!inspectorPanel) {
+      if (![NSBundle loadNibNamed:@"InspectorPanel" owner:self]) {
+          NSLog (@"Faild to load InspectorPanel.gorm");
+          return;
+        }
+      [inspectorPanel center];
+    }
+  [inspectorPanel makeKeyAndOrderFront:nil];
 }
 
 @end
