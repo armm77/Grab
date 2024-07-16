@@ -20,6 +20,9 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <X11/Xlib.h>
+#import <X11/Xutil.h>
+#import <X11/extensions/Xcomposite.h>
+#import <X11/cursorfont.h>
 
 @interface GrabDraw : NSObject
 + (NSImage *)captureWindowWithID:(Window)window display:(Display *)display;

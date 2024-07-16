@@ -27,6 +27,10 @@
   id  inspectorPanel;
   id  helpText;
 
+  IBOutlet NSTextField* verField;
+  IBOutlet NSTextField* copyrightField;
+  NSDictionary *infoDict;
+
   NSPanel *appIconPanel;
   NSButton *appIconButton;
   NSArray<NSImage *> *cameraEyeImages;
@@ -41,9 +45,6 @@
   int currentFrame;
   int currentImageIndex;
 }
-
-@property (nonatomic, strong) NSTimer *countdownTimer;
-@property (nonatomic, assign) NSInteger countdown;
 
 - (void) startTimer:(id)sender;
 - (void) appIconWindow:(id)sender;

@@ -19,10 +19,6 @@
 */
 #import "GrabController.h"
 #import "GrabDraw.h"
-#import <X11/Xlib.h>
-#import <X11/Xutil.h>
-#import <X11/cursorfont.h>
-#import <X11/extensions/Xfixes.h>
 
 @implementation GrabController
 
@@ -51,7 +47,7 @@
 
     NSString *pieImagePath = [[NSBundle mainBundle] pathForResource:@"PiePieces" ofType:@"tiff"];
     NSImage *pieImage = [[NSImage alloc] initWithContentsOfFile:pieImagePath];
-    piePiecesImage = [self compositeImage:backgroundImage withOverlay:pieImage];
+    piePiecesImage = [pieImage copy];
     if (!piePiecesImage) {
         NSLog(@"Error: Unable to load image PiePieces.tiff");
     }
@@ -97,7 +93,8 @@
     return compositeImage;
 }
 
-- (void) updateAppIconImage {
+- (void) updateAppIconImage
+{
     currentImageIndex = (currentImageIndex + 1) % cameraEyeImages.count;
     [appIconButton setImage:cameraEyeImages[currentImageIndex]];
 }
@@ -113,27 +110,22 @@
     NSRect screenFrame = [[NSScreen mainScreen] frame];
     NSRect panelFrame = NSMakeRect(screenFrame.size.width - 67, screenFrame.size.height - 64, 64, 64);
     appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
-                                               styleMask:NSWindowStyleMaskBorderless
-                                                 backing:NSBackingStoreBuffered
-                                                   defer:NO];
+                                              styleMask:NSWindowStyleMaskBorderless
+                                                backing:NSBackingStoreBuffered
+                                                  defer:NO];
+
     [appIconPanel setLevel:NSStatusWindowLevel];
     [appIconPanel setOpaque:NO];
     [appIconPanel setBackgroundColor:[NSColor clearColor]];
-    [appIconPanel setFloatingPanel:YES];
+    [appIconPanel makeKeyAndOrderFront:nil];
     
     appIconButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
     [appIconButton setBordered:NO];
-    [appIconButton setImage:cameraEyeImages[0]];
-    [appIconButton setImagePosition:NSImageOnly];
-    
+    [appIconButton setImage:cameraNormalImage];
     [appIconButton setTarget:self];
-    [appIconButton setAction:@selector(iconCaptureWindow)];
-    
+    [appIconButton setAction:@selector(captureWindow)];
+
     [[appIconPanel contentView] addSubview:appIconButton];
-    [appIconPanel makeKeyAndOrderFront:nil];
-    
-    currentImageIndex = 0;
-    animationTimer = [NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(updateAppIconImage) userInfo:nil repeats:YES];
 }
 
 - (void) appIconFullScreen:(id)sender
@@ -176,16 +168,16 @@
     NSRect panelFrame = NSMakeRect(screenFrame.size.width - 67, screenFrame.size.height - 64, 64, 64);
 
     appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
-                                         styleMask:NSWindowStyleMaskBorderless
-                                           backing:NSBackingStoreBuffered
-                                             defer:NO];
+                                              styleMask:NSWindowStyleMaskBorderless
+                                                backing:NSBackingStoreBuffered
+                                                  defer:NO];
 
     [appIconPanel setLevel:NSStatusWindowLevel];
     [appIconPanel setOpaque:NO];
     [appIconPanel setBackgroundColor:[NSColor clearColor]];
     [appIconPanel makeKeyAndOrderFront:nil];
 
-    appIconButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
+    appIconButton = [[NSButton alloc] initWithFrame:panelFrame];
     [appIconButton setBordered:NO];
     [appIconButton setTarget:self];
     [appIconButton setAction:@selector(startTimer:)];
@@ -196,49 +188,23 @@
     [appIconButton setFrameOrigin:NSMakePoint(0, 0)];
 }
 
-- (void) iconCaptureWindow {
-    [animationTimer invalidate];
-    animationTimer = nil;
-
-    [appIconButton setImage:cameraEyeFlashImage];
-    
-    [NSTimer scheduledTimerWithTimeInterval:1.0
-                                    repeats:NO
-                                      block:^(NSTimer * _Nonnull timer) {
-        NSString *soundPath = [[NSBundle mainBundle] pathForResource:@"OpenShutter" ofType:@"wav"];
-        NSSound *sound = [[NSSound alloc] initWithContentsOfFile:soundPath byReference:NO];
-        
-        [sound play];
-        [NSThread sleepForTimeInterval:sound.duration];
-        //[self captureWindow:self];
-        
-        [appIconPanel close];
-        appIconPanel = nil;
-        appIconButton = nil;
-    }];
-}
-
-- (void) iconCaptureFullScreen {
+- (void) iconCaptureFullScreen
+{
     [appIconButton setImage:cameraEyeFlashImage];
 
     [NSTimer scheduledTimerWithTimeInterval:1.0
                                     repeats:NO
                                       block:^(NSTimer * _Nonnull timer) {
-        NSString *soundPath = [[NSBundle mainBundle] pathForResource:@"OpenShutter" ofType:@"wav"];
-        NSSound *sound = [[NSSound alloc] initWithContentsOfFile:soundPath byReference:NO];
-
-        [sound play];
-        [NSThread sleepForTimeInterval:sound.duration];
         [self captureFullScreen];
-
         [appIconPanel close];
         appIconPanel = nil;
         appIconButton = nil;
     }];
 }
 
-- (void)startTimer:(id)sender {
-    currentFrame = 1;
+- (void) startTimer:(id)sender
+{
+    currentFrame = 0;
     timer = [NSTimer scheduledTimerWithTimeInterval:1.0
                                              target:self
                                            selector:@selector(updateFrame)
@@ -246,7 +212,8 @@
                                             repeats:YES];
 }
 
-- (void)updateFrame {
+- (void) updateFrame
+{
     if (currentFrame >= 10) {
         [timer invalidate];
         NSString *soundTimerPath = [[NSBundle mainBundle] pathForResource:@"TimerDone" ofType:@"wav"];
@@ -261,7 +228,8 @@
     currentFrame++;
 }
 
-- (void)updateAppIconWithCameraImage {
+- (void) updateAppIconWithCameraImage
+{
     NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
     [compositeImage lockFocus];
 
@@ -279,7 +247,8 @@
     [appIconButton setImage:compositeImage];
 }
 
-- (void)updateAppIconWithPiePiece {
+- (void) updateAppIconWithPiePiece
+{
     NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
     [compositeImage lockFocus];
 
@@ -294,8 +263,8 @@
                         fraction:1.0];
 
     if (currentFrame < 10) {
-        NSRect sourceRect = NSMakeRect(currentFrame * 17, 0, 17, 16);
-        NSRect destRect = NSMakeRect(41, 40, 17, 16);
+        NSRect sourceRect = NSMakeRect(currentFrame * 17, 0, 17, 17);
+        NSRect destRect = NSMakeRect(41, 40, 17, 17);
         [piePiecesImage drawInRect:destRect
                           fromRect:sourceRect
                          operation:NSCompositeSourceOver
@@ -306,7 +275,8 @@
     [appIconButton setImage:compositeImage];
 }
 
-- (void)showFlashImage {
+- (void) showFlashImage
+{
     [self captureFullScreen];
     NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
     [compositeImage lockFocus];
@@ -323,14 +293,10 @@
 
     [compositeImage unlockFocus];
     [appIconButton setImage:compositeImage];
+
     [NSTimer scheduledTimerWithTimeInterval:1.0
                                     repeats:NO
                                       block:^(NSTimer * _Nonnull timer) {
-        NSString *soundClosePath = [[NSBundle mainBundle] pathForResource:@"CloseShutter" ofType:@"wav"];
-        NSSound *soundClose = [[NSSound alloc] initWithContentsOfFile:soundClosePath byReference:NO];
-        [soundClose play];
-        [NSThread sleepForTimeInterval:soundClose.duration];
-
         [appIconPanel close];
         appIconPanel = nil;
         appIconButton = nil;
@@ -339,6 +305,10 @@
 
 - (void) captureWindow
 {
+    [appIconButton setImage:cameraEyeImages[0]];
+    currentImageIndex = 0;
+    animationTimer = [NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(updateAppIconImage) userInfo:nil repeats:YES];
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
         if (!display) {
@@ -362,6 +332,7 @@
             return;
         }
 
+	XRaiseWindow(display, window);
         XUngrabPointer(display, CurrentTime);
 
         NSImage *image = [GrabDraw captureWindowWithID:window display:display];
@@ -370,6 +341,20 @@
             NSLog(@"Error: couldn't capture window image.");
             XCloseDisplay(display);
             return;
+        } else {
+            [animationTimer invalidate];
+            animationTimer = nil;
+            [appIconButton setImage:cameraEyeFlashImage];
+
+            NSString *soundPath = [[NSBundle mainBundle] pathForResource:@"OpenShutter" ofType:@"wav"];
+            NSSound *sound = [[NSSound alloc] initWithContentsOfFile:soundPath byReference:NO];
+            [sound play];
+            [NSThread sleepForTimeInterval:sound.duration];
+
+            [NSThread sleepForTimeInterval:1.0];
+            [appIconPanel close];
+            appIconPanel = nil;
+            appIconButton = nil;
         }
 
         XCloseDisplay(display);
@@ -497,7 +482,6 @@
                 done = 2;
                 break;
             case KeyRelease:
-                /* ignore */
                 break;
             default:
                 break;
@@ -568,7 +552,6 @@
 
 - (void) dealloc
 {
-//  [self stopCountdown];
   [super dealloc];
 }
 
@@ -591,11 +574,16 @@
 
 - (void) showInfoPanel:(id)sender
 {
+  NSString *file = [[NSBundle mainBundle] pathForResource:@"GrabInfo" ofType: @"plist"];
+  infoDict = [NSDictionary dictionaryWithContentsOfFile:file];
+
   if (!infoPanel) {
       if (![NSBundle loadNibNamed:@"InfoPanel" owner:self]) {
           NSLog (@"Faild to load InfoPanel.gorm");
           return;
         }
+      [verField setStringValue:[NSString stringWithFormat:@"Release %@", [infoDict objectForKey:@"ApplicationRelease"]]];
+      [copyrightField setStringValue:[infoDict objectForKey:@"Copyright"]];
       [infoPanel center];
     }
   [infoPanel makeKeyAndOrderFront:nil];

@@ -22,7 +22,7 @@ include $(GNUSTEP_MAKEFILES)/common.make
 #
 # Application
 #
-VERSION = 0.1
+VERSION = 0.0.1b
 PACKAGE_NAME = Grab
 APP_NAME = Grab
 Grab_APPLICATION_ICON = Grab.App.tiff
@@ -32,6 +32,7 @@ Grab_APPLICATION_ICON = Grab.App.tiff
 # Resource files
 #
 Grab_RESOURCE_FILES = \
+Resources/GrabInfo.plist \
 Resources/Grab.gorm \
 Resources/InfoPanel.gorm \
 Resources/InspectorPanel.gorm \

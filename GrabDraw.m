@@ -19,9 +19,6 @@
 */
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#import <X11/Xlib.h>
-#import <X11/Xutil.h>
-#import <time.h>
 #import "GrabDraw.h"
 
 @implementation GrabDraw
@@ -29,6 +26,9 @@
 + (NSImage *)captureWindowWithID:(Window)window display:(Display *)display {
     XWindowAttributes gwa;
     XGetWindowAttributes(display, window, &gwa);
+
+    XFlush(display);
+    XCompositeRedirectWindow(display, window, CompositeRedirectAutomatic);
 
     XImage *image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
     if (!image) {
@@ -61,16 +61,23 @@
     }
 
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
+    [formatter setDateFormat:@"yyMMddHHmmss"];
     NSString *dateString = [formatter stringFromDate:[NSDate date]];
     [formatter release];
 
-    NSString *fileName = [NSString stringWithFormat:@"screenshot_%@.png", dateString];
+    NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:@"CloseShutter" ofType:@"wav"];
+    NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:YES];
+
+    NSString *directoryPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Screenshots"];
+    NSString *fileName = [NSString stringWithFormat:@"ss_%@.png", dateString];
+    NSString *filePath = [directoryPath stringByAppendingPathComponent:fileName];
+
     NSData *imageData = [imageRep TIFFRepresentation];
     NSBitmapImageRep *imageSave = [NSBitmapImageRep imageRepWithData:imageData];
     NSData *pngData = [imageSave representationUsingType:NSPNGFileType properties:@{}];
-    if ([pngData writeToFile:fileName atomically:YES]) {
-        NSLog(@"Screenshot saved to %@", fileName);
+    if ([pngData writeToFile:filePath atomically:YES]) {
+	[clickSound play];
+        NSLog(@"Screenshot saved to %@", filePath);
     } else {
         NSLog(@"Error saving image.");
     }
@@ -115,20 +122,23 @@
     }
 
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
+    [formatter setDateFormat:@"yyMMddHHmmss"];
     NSString *dateString = [formatter stringFromDate:[NSDate date]];
     [formatter release];
     
     NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:@"OpenShutter" ofType:@"wav"];
     NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:YES];
 
-    NSString *fileName = [NSString stringWithFormat:@"screenshot_%@.png", dateString];
+    NSString *directoryPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Screenshots"];
+    NSString *fileName = [NSString stringWithFormat:@"ss_%@.png", dateString];
+    NSString *filePath = [directoryPath stringByAppendingPathComponent:fileName];
+
     NSData *imageData = [imageRep TIFFRepresentation];
     NSBitmapImageRep *imageSave = [NSBitmapImageRep imageRepWithData:imageData];
     NSData *pngData = [imageSave representationUsingType:NSPNGFileType properties:@{}];
-    if ([pngData writeToFile:fileName atomically:YES]) {
-        NSLog(@"Screenshot saved to %@", fileName);
-    	[clickSound play];
+    if ([pngData writeToFile:filePath atomically:YES]) {
+	[clickSound play];
+        NSLog(@"Screenshot saved to %@", filePath);
     } else {
         NSLog(@"Error saving image.");
     }

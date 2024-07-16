@@ -15,6 +15,9 @@
     };
     FirstResponder = {
 	Actions = (
+	    "appIconFullScreen:",
+	    "appIconTimeScreen:",
+	    "appIconWindow:",
 	    "captureFullScreen:",
 	    "captureScreen:",
 	    "captureScreenSection:",
@@ -25,16 +28,18 @@
 	    "showInfoPanel:",
 	    "showInspectorPanel:",
 	    "showPrefPanel:",
-	    "showPrefsPanel:"
+	    "showPrefsPanel:",
+	    "startTimer:"
 	);
 	Super = NSObject;
     };
     GrabController = {
 	Actions = (
-	    "captureWindow:",
+	    "startTimer:",
+	    "appIconWindow:",
+	    "appIconFullScreen:",
+	    "appIconTimeScreen:",
 	    "captureScreenSection:",
-	    "captureFullScreen:",
-	    "captureTimedScreen:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showCursorPanel:",
@@ -44,7 +49,10 @@
 	    infoPanel,
 	    helpPanel,
 	    cursorPanel,
-	    inspectorPanel
+	    inspectorPanel,
+	    helpText,
+	    verField,
+	    copyrightField
 	);
 	Super = NSObject;
     };
