@@ -65,16 +65,12 @@
     NSString *dateString = [formatter stringFromDate:[NSDate date]];
     [formatter release];
 
-    NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:@"OpenShutter" ofType:@"wav"];
-    NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:YES];
-
     NSString *fileName = [NSString stringWithFormat:@"screenshot_%@.png", dateString];
     NSData *imageData = [imageRep TIFFRepresentation];
     NSBitmapImageRep *imageSave = [NSBitmapImageRep imageRepWithData:imageData];
     NSData *pngData = [imageSave representationUsingType:NSPNGFileType properties:@{}];
     if ([pngData writeToFile:fileName atomically:YES]) {
         NSLog(@"Screenshot saved to %@", fileName);
-	    [clickSound play];
     } else {
         NSLog(@"Error saving image.");
     }
@@ -132,7 +128,7 @@
     NSData *pngData = [imageSave representationUsingType:NSPNGFileType properties:@{}];
     if ([pngData writeToFile:fileName atomically:YES]) {
         NSLog(@"Screenshot saved to %@", fileName);
-	[clickSound play];
+    	[clickSound play];
     } else {
         NSLog(@"Error saving image.");
     }

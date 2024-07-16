@@ -15,11 +15,36 @@
     };
     FirstResponder = {
 	Actions = (
+	    "captureFullScreen:",
 	    "captureScreen:",
+	    "captureScreenSection:",
+	    "captureTimedScreen:",
+	    "captureWindow:",
+	    "showCursorPanel:",
+	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showInspectorPanel:",
 	    "showPrefPanel:",
 	    "showPrefsPanel:"
+	);
+	Super = NSObject;
+    };
+    GrabController = {
+	Actions = (
+	    "captureWindow:",
+	    "captureScreenSection:",
+	    "captureFullScreen:",
+	    "captureTimedScreen:",
+	    "showHelpPanel:",
+	    "showInfoPanel:",
+	    "showCursorPanel:",
+	    "showInspectorPanel:"
+	);
+	Outlets = (
+	    infoPanel,
+	    helpPanel,
+	    cursorPanel,
+	    inspectorPanel
 	);
 	Super = NSObject;
     };

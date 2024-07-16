@@ -4,18 +4,18 @@
     "APP_TYPE" = GORM;
     "BUILDER_STRIP" = YES;
     "BUILDER_TARGETS" = (
-    all,
-    install,
-    uninstall,
-    clean,
-    distclean,
-    dist
+	all,
+	install,
+	uninstall,
+	clean,
+	distclean,
+	dist
     );
     "BUILDER_VERBOSE" = YES;
     "BUNDLE_IDENTIFIER" = "";
     "CLASS_FILES" = (
-    "GrabController.m",
-    "GrabDraw.m"
+	"GrabController.m",
+	"GrabDraw.m"
     );
     COMPILEROPTIONS = "";
     CPPOPTIONS = "";
@@ -25,44 +25,45 @@
     FRAMEWORKS = (
     );
     "HEADER_FILES" = (
-    "GrabController.h",
-    "GrabDraw.h"
+	"GrabController.h",
+	"GrabDraw.h"
     );
     IMAGES = (
-    "CameraNormal.tiff",
-    "ArrowCursor.tiff",
-    "CameraEye1.tiff",
-    "CameraEye2.tiff",
-    "CameraEye3.tiff",
-    "CameraEyeFlash.tiff",
-    "CameraNormal.tiff",
-    "CameraPointer.tiff",
-    "CameraWatch.tiff",
-    "CameraWatchFlash.tiff",
-    "copyCursor.tiff",
-    "genericCursor.tiff",
-    "HelpCursor.tiff",
-    "IbeamCursor.tiff",
-    "linkCursor.tiff",
-    "PiePieces.tiff",
-    "PlaceCursor.tiff",
-    "PointerCursor.tiff",
-    "SelectCursor.tiff",
-    "WaitCursor.tiff",
-    "Grab.App.tiff"
+	"CameraNormal.tiff",
+	"ArrowCursor.tiff",
+	"CameraEye1.tiff",
+	"CameraEye2.tiff",
+	"CameraEye3.tiff",
+	"CameraEyeFlash.tiff",
+	"CameraNormal.tiff",
+	"CameraPointer.tiff",
+	"CameraWatch.tiff",
+	"CameraWatchFlash.tiff",
+	"common_Tile.tiff",
+	"copyCursor.tiff",
+	"genericCursor.tiff",
+	"HelpCursor.tiff",
+	"IbeamCursor.tiff",
+	"linkCursor.tiff",
+	"PiePieces.tiff",
+	"PlaceCursor.tiff",
+	"PointerCursor.tiff",
+	"SelectCursor.tiff",
+	"WaitCursor.tiff",
+	"Grab.App.tiff"
     );
     INSTALLDIR = "$(HOME)/GNUstep";
     INTERFACES = (
-    "Grab.gorm",
-    "InfoPanel.gorm",
-    "InspectorPanel.gorm",
-    "CursorTypes.gorm",
-    "HelpPanel.gorm"
+	"Grab.gorm",
+	"InfoPanel.gorm",
+	"InspectorPanel.gorm",
+	"CursorTypes.gorm",
+	"HelpPanel.gorm"
     );
     LANGUAGE = English;
     LIBRARIES = (
-    "gnustep-base",
-    "gnustep-gui"
+	"gnustep-base",
+	"gnustep-gui"
     );
     LINKEROPTIONS = "-lX11 -lXrender -lXcomposite -lXcursor -ldispatch";
     "LOCALIZED_RESOURCES" = (
@@ -71,17 +72,17 @@
     MAKEFILEDIR = "$(GNUSTEP_MAKEFILES)";
     "OBJC_COMPILEROPTIONS" = "";
     "OTHER_RESOURCES" = (
-    "HelpPanel.rtf",
-    "CloseShutter.wav",
-    "OpenShutter.wav",
-    "TimerDone.wav"
+	"HelpPanel.rtf",
+	"CloseShutter.wav",
+	"OpenShutter.wav",
+	"TimerDone.wav"
     );
     "OTHER_SOURCES" = (
-    "Grab_main.m"
+	"Grab_main.m"
     );
     "PRINCIPAL_CLASS" = NSApplication;
     "PROJECT_AUTHORS" = (
-    "Andres Morales"
+	"Andres Morales"
     );
     "PROJECT_COPYRIGHT" = "Copyright (C) 2024";
     "PROJECT_COPYRIGHT_DESC" = GPL;
@@ -103,12 +104,12 @@
     SUBPROJECTS = (
     );
     "SUPPORTING_FILES" = (
-    GNUmakefile,
-    "GNUmakefile.preamble",
-    "GNUmakefile.postamble",
-    "GrabInfo.plist"
+	GNUmakefile,
+	"GNUmakefile.preamble",
+	"GNUmakefile.postamble",
+	"GrabInfo.plist"
     );
     "USER_LANGUAGES" = (
-    English
+	English
     );
 }

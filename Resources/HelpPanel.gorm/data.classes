@@ -1,15 +1,29 @@
 {
     "## Comment" = "Do NOT change this file, Gorm maintains it";
+    AppController = {
+	Actions = (
+	    "showPrefPanel:",
+	    "showInfoPanel:",
+	    "showInspectorPanel:"
+	);
+	Outlets = (
+	    infoPanel,
+	    inspectorPanel
+	);
+	Super = NSObject;
+    };
     FirstResponder = {
 	Actions = (
 	    "captureFullScreen:",
 	    "captureScreenSection:",
 	    "captureTimedScreen:",
 	    "captureWindow:",
+	    "showAppIconCaptureWindow:",
 	    "showCursorPanel:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
-	    "showInspectorPanel:"
+	    "showInspectorPanel:",
+	    "showPrefPanel:"
 	);
 	Super = NSObject;
     };
@@ -19,6 +33,7 @@
 	    "captureScreenSection:",
 	    "captureFullScreen:",
 	    "captureTimedScreen:",
+	    "showAppIconCaptureWindow:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showCursorPanel:",
@@ -26,9 +41,25 @@
 	);
 	Outlets = (
 	    infoPanel,
+	    helpPanel,
 	    cursorPanel,
-	    inspectorPanel
+	    inspectorPanel,
+	    helpText
 	);
 	Super = NSObject;
+    };
+    "GrabHelp View" = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NSTextView;
+    };
+    GrabHelpView = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NSTextView;
     };
 }

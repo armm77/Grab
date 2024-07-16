@@ -22,20 +22,34 @@
 
 @interface GrabController : NSObject <NSApplicationDelegate> {
   id  infoPanel;
+  id  helpPanel;
   id  cursorPanel;
   id  inspectorPanel;
-  
-  NSTextView *textView;
+  id  helpText;
+
+  NSPanel *appIconPanel;
+  NSButton *appIconButton;
+  NSArray<NSImage *> *cameraEyeImages;
+  NSImage *backgroundImage;
+  NSImage *cameraEyeFlashImage;
+  NSImage *cameraNormalImage;
+  NSImage *piePiecesImage;
+  NSImage *cameraWatchImage;
+  NSImage *cameraWatchFlashImage;
+  NSTimer *animationTimer;
+  NSTimer *timer;
+  int currentFrame;
+  int currentImageIndex;
 }
 
 @property (nonatomic, strong) NSTimer *countdownTimer;
 @property (nonatomic, assign) NSInteger countdown;
 
-- (void) captureWindow:(id)sender;
+- (void) startTimer:(id)sender;
+- (void) appIconWindow:(id)sender;
+- (void) appIconFullScreen:(id)sender;
+- (void) appIconTimeScreen:(id)sender;
 - (void) captureScreenSection:(id)sender;
-- (void) captureFullScreen:(id)sender;
-- (void) captureTimedScreen:(id)sender;
-- (void) updateCountdown;
 
 - (void) showHelpPanel:(id)sender;
 - (void) showInfoPanel:(id)sender;
@@ -43,4 +57,3 @@
 - (void) showInspectorPanel:(id)sender;
 
 @end
-
