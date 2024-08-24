@@ -12,7 +12,7 @@ ADDITIONAL_OBJCFLAGS +=
 ADDITIONAL_CFLAGS += 
 
 # Additional flags to pass to the linker
-ADDITIONAL_LDFLAGS += -lX11 -lXrender -lXcomposite -lXcursor -ldispatch 
+ADDITIONAL_LDFLAGS += -lX11 -lXcomposite -lXcursor -ldispatch
 
 # Additional include directories the compiler should search
 ADDITIONAL_INCLUDE_DIRS += 
@@ -23,3 +23,7 @@ ADDITIONAL_LIB_DIRS +=
 # Additional GUI libraries to link
 ADDITIONAL_GUI_LIBS += 
 
+#
+# Flags dealing with installing and uninstalling
+#
+GNUSTEP_INSTALLATION_DIR=$(GNUSTEP_SYSTEM_ROOT)

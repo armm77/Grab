@@ -23,25 +23,6 @@
 
 int main(int argc, const char * argv[]) 
 {
-    NSString *homeDirectory = NSHomeDirectory();
-    NSString *folderName = @"Screenshots";
-        
-    NSString *folderPath = [homeDirectory stringByAppendingPathComponent:folderName];
-    BOOL isDir;
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-        
-    if (![fileManager fileExistsAtPath:folderPath isDirectory:&isDir]) {
-        NSError *error = nil;
-        if ([fileManager createDirectoryAtPath:folderPath withIntermediateDirectories:YES attributes:nil error:&error]) {
-            NSLog(@"Folder created in %@", folderPath);
-        } else {
-            NSLog(@"Error creating folder: %@", error.localizedDescription);
-        }
-    } else if (isDir) {
-              NSLog(@"The folder already exists in %@", folderPath);
-           } else {
-              NSLog(@"A file with the same name as the folder already exists in %@", folderPath);
-    }
     return NSApplicationMain (argc, argv);
 }
 

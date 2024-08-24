@@ -1,58 +1,19 @@
-{\rtf0\ansi{\fonttbl\f0\fswiss Helvetica;}
-\paperw17840
-\paperh13200
-\margl120
-\margr120
-\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\f0\b\i0\ulnone\fs28\fc0\cf0 Welcome to the Grab application!
-\b0 \
-\
-The Grab application provides ways to capture part or all of your computer screen, and then to either save the "grabbed" images to a 
-\b .tiff
-\b0  file, or to copy them to the 
-\b Pasteboard
-\b0 .\
-\
-Grab provides four separate ways to grab images from your screen:\
-\
-
-\b Selection - 
-\b0 This option is used to grab arbitrary areas of the screen.  When this option is selected, your mouse cursor will change to a cross-hair type shape.  Move the mouse cursor to the area on the screen where you want to capture an image.  
-\b  Do not press the mouse button yet!
-\b0   As you drag the mouse, numbers will appear to the left of the cursor, indicating the current screen coordinates of the mouse.  Once you are positioned properly, 
-\b drag
-\b0  the mouse (press mouse button while moving mouse), forming the rectangular area you wish to grab.  Once in this mode, the numbers to the left of the mouse cursor indicate the size, in pixels, of the area you are about to grab.  When the rectangular area is the correct size, release the mouse button, and a window will appear, showing you the image you just "grabbed".  At this point you may save the image, or copy it to the Pasteboard.\
-\
-
-\b Window - 
-\b0 This option is used to grab a particular window from your screen.  When this option is selected, a camera icon will be placed in the top right corner of your screen.  At this point, you should position your windows any way you like.  When you are satisfied, click your mouse on the camera icon.  The camera will show that it is ready to take a "picture", and your mouse cursor will change to a small camera, or one of the cursors you have chosen from the "Choose Cursor" panel.  Move the mouse cursor to the window you want to grab, and click on the window to "grab" it.  This mode will correctly capture a window even if it is partially obscured, or partially off the screen.  If you click on the screen background (i.e. not on any window) when in this mode, the whole screen will be "grabbed".\
-\
-
-\b Screen - 
-\b0 This option is used to grab your whole computer screen.  When this option is selected, a camera icon will be placed in the top right corner of your screen.  At this point, you should position your windows any way you like.  When you are satisfied, click your mouse on the camera icon.  Grab is now waiting for a final click, anywhere on the screen, telling it to take the screen shot.   The Grab application will always hide itself before "snapping" the picture, so you do not need to move Grab windows off the screen.\
-\
-
-\b Timed Screen - 
-\b0 This option is used to grab your whole computer screen after a 10 second time interval.  When this option is selected, a camera icon will be placed in the top right corner of your screen.  When you are ready to start the timer, click on the camera icon, and the camera will start counting the ten seconds.  During the last second, or so, Grab will sound an alarm indicating that the actual grab is immenent, and then the full screen will automatically be "grabbed" (as in "Screen" option).  This option is useful in order to capture popup menus, button states, etc.  \
-\
-Once you have grabbed an image you can always re-grab smaller pieces of it right out of the grab document window, using the 
-\b Selection
-\b0  method.\
-\
-The 
-\b Choose Cursor
-\b0  panel allows you to choose which, if any, type of mouse cursor should be used when doing "window", "screen", or "timed screen" grabs.  Setting this option will cause the selected cursor to appear in your grabbed image, at the position the mouse was when the camera "clicked".  
-\b This option is not honored in the "Selection" mode!\
-\
-Grabbing at different bit depths\
-
-\b0 You may want to grab an image at a different bit depth than your system provides.  For instance, you may be on a 12 bit color system, but want to grab images in 2 bit gray mode (for documentation, perhaps).  In this case, your whole system should be running at the same bit depth as the bit depth you want for your grabbed images.  To accomplish this (for the 2 bit gray example), in a Terminal window type:\
-	
-\b dwrite GLOBAL NXWindowDepthLimit TwoBitGray\
-
-\b0 Then logout and log back in.  In this example, your whole system will now be running in TwoBitGray mode, and all grabs will be 2 bit grabs.\
-
-\b NOTE:
-\b0   Simply launching Grab with the "-NXWindowDepthLimit TwoBitGray" parameter when all other applications are running as 12 bit color will produce 
-\b dithered
-\b0  2 bit gray images, which will not, typically, be as high quality as they would if all applications where running as 2 bit gray.
-}
+{\rtf1\ansi\ansicpg1252\cocoartf102{\fonttbl\f0\fswiss Helvetica;}
+{\colortbl;\red0\green0\blue0;}
+\paperw17840\paperh13200\hyphauto1\hyphfactor0\pard\tx520\tx1060\tx1600\tx2120\tx2660\tx3200\tx3720\tx4260\tx4800\tx5320\ql\f0\fs28\b\cf1 Welcome to the Grab application!\b0 \par
+\par
+The Grab application provides ways to capture part or all of your computer screen, and then to either save the "grabbed" images to a \b .png\b0  file, or to copy them to the \b Pasteboard\b0 .\par
+\par
+Grab provides four separate ways to grab images from your screen:\par
+\par
+\b Selection - \b0 This option is used to grab arbitrary areas of the screen.  When this option is selected, your mouse cursor will change to a cross-hair type shape.  Move the mouse cursor to the area on the screen where you want to capture an image.  \b  Do not press the mouse button yet!\b0   As you drag the mouse, numbers will appear to the left of the cursor, indicating the current screen coordinates of the mouse.  Once you are positioned properly, \b drag\b0  the mouse (press mouse button while moving mouse), forming the rectangular area you wish to grab.  Once in this mode, the numbers to the left of the mouse cursor indicate the size, in pixels, of the area you are about to grab.  When the rectangular area is the correct size, release the mouse button, and a window will appear, showing you the image you just "grabbed".  At this point you may save the image, or copy it to the Pasteboard.\par
+\par
+\b Window - \b0 This option is used to grab a particular window from your screen.  When this option is selected, a camera icon will be placed in the top right corner of your screen.  At this point, you should position your windows any way you like.  When you are satisfied, click your mouse on the camera icon.  The camera will show that it is ready to take a "picture", and your mouse cursor will change to a small camera, or one of the cursors you have chosen from the "Choose Cursor" panel.  Move the mouse cursor to the window you want to grab, and click on the window to "grab" it.  This mode will correctly capture a window even if it is partially obscured, or partially off the screen.  If you click on the screen background (i.e. not on any window) when in this mode, the whole screen will be "grabbed".\par
+\par
+\b Screen - \b0 This option is used to grab your whole computer screen.  When this option is selected, a camera icon will be placed in the top right corner of your screen.  At this point, you should position your windows any way you like.  When you are satisfied, click your mouse on the camera icon.  Grab is now waiting for a final click, anywhere on the screen, telling it to take the screen shot.   The Grab application will always hide itself before "snapping" the picture, so you do not need to move Grab windows off the screen.\par
+\par
+\b Timed Screen - \b0 This option is used to grab your whole computer screen after a 10 second time interval.  When this option is selected, a camera icon will be placed in the top right corner of your screen.  When you are ready to start the timer, click on the camera icon, and the camera will start counting the ten seconds.  During the last second, or so, Grab will sound an alarm indicating that the actual grab is immenent, and then the full screen will automatically be "grabbed" (as in "Screen" option).  This option is useful in order to capture popup menus, button states, etc.  \par
+\par
+Once you have grabbed an image you can always re-grab smaller pieces of it right out of the grab document window, using the \b Selection\b0  method.\par
+\par
+The \b Choose Cursor\b0  panel allows you to choose which, if any, type of mouse cursor should be used when doing "window", "screen", or "timed screen" grabs.  Setting this option will cause the selected cursor to appear in your grabbed image, at the position the mouse was when the camera "clicked".  \b This option is not honored in the "Selection" mode!}

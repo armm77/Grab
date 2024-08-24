@@ -17,16 +17,15 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-#import <Foundation/Foundation.h>
-#import <AppKit/AppKit.h>
 #import "GrabDraw.h"
+#import "DraggableImageView.h"
 
 @implementation GrabDraw
 
 + (NSImage *)captureWindowWithID:(Window)window display:(Display *)display {
     XWindowAttributes gwa;
     XGetWindowAttributes(display, window, &gwa);
-
+    XRaiseWindow(display, window);
     XFlush(display);
     XCompositeRedirectWindow(display, window, CompositeRedirectAutomatic);
 
@@ -38,15 +37,15 @@
 
     NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc]
                                   initWithBitmapDataPlanes:nil
-                                  pixelsWide:gwa.width
-                                  pixelsHigh:gwa.height
-                                  bitsPerSample:8
-                                  samplesPerPixel:4
-                                  hasAlpha:YES
-                                  isPlanar:NO
-                                  colorSpaceName:NSDeviceRGBColorSpace
-                                  bytesPerRow:4 * gwa.width
-                                  bitsPerPixel:32];
+                                                pixelsWide:gwa.width
+                                                pixelsHigh:gwa.height
+                                             bitsPerSample:8
+                                           samplesPerPixel:4
+                                                  hasAlpha:YES
+                                                  isPlanar:NO
+                                            colorSpaceName:NSDeviceRGBColorSpace
+                                               bytesPerRow:4 * gwa.width
+                                              bitsPerPixel:32];
 
     unsigned char *data = [imageRep bitmapData];
     for (NSUInteger y = 0; y < (NSUInteger)gwa.height; y++) {
@@ -60,37 +59,91 @@
         }
     }
 
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateFormat:@"yyMMddHHmmss"];
-    NSString *dateString = [formatter stringFromDate:[NSDate date]];
-    [formatter release];
-
     NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:@"CloseShutter" ofType:@"wav"];
     NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:YES];
+    [clickSound play];
 
-    NSString *directoryPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Screenshots"];
-    NSString *fileName = [NSString stringWithFormat:@"ss_%@.png", dateString];
-    NSString *filePath = [directoryPath stringByAppendingPathComponent:fileName];
+    NSImage *nsImage = [[NSImage alloc] initWithSize:NSMakeSize(gwa.width, gwa.height)];
+    [nsImage addRepresentation:imageRep];
 
-    NSData *imageData = [imageRep TIFFRepresentation];
-    NSBitmapImageRep *imageSave = [NSBitmapImageRep imageRepWithData:imageData];
-    NSData *pngData = [imageSave representationUsingType:NSPNGFileType properties:@{}];
-    if ([pngData writeToFile:filePath atomically:YES]) {
-	[clickSound play];
-        NSLog(@"Screenshot saved to %@", filePath);
+    NSScreen *mainScreen = [NSScreen mainScreen];
+    NSRect screenFrame = [mainScreen frame];
+    NSWindow *nsWindow;
+
+    NSRect windowFrame;
+    if (gwa.width == (int)screenFrame.size.width && gwa.height == (int)screenFrame.size.height) {
+        CGFloat windowX = (screenFrame.size.width - 800) / 2;
+        CGFloat windowY = (screenFrame.size.height - 600) / 2;
+        windowFrame = NSMakeRect(windowX, windowY, 800, 600);
+
+        nsWindow = [[NSWindow alloc] initWithContentRect:windowFrame
+                                               styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable | 
+                                                          NSWindowStyleMaskClosable | NSWindowStyleMaskResizable)
+                                                 backing:NSBackingStoreBuffered
+                                                   defer:NO];
+        [nsWindow setTitle:@"Untitled.png"];
+        DraggableImageView *imageView = [[DraggableImageView alloc] initWithFrame:NSMakeRect(0, 0, gwa.width, gwa.height)];
+        [imageView setImage:nsImage];
+
+        NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:windowFrame];
+        [scrollView setDocumentView:imageView];
+        [scrollView setHasVerticalScroller:YES];
+        [scrollView setHasHorizontalScroller:YES];
+        [scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
+        [nsWindow setContentView:scrollView];
+        [nsWindow makeKeyAndOrderFront:nil];
     } else {
-        NSLog(@"Error saving image.");
+        CGFloat windowX = (screenFrame.size.width - gwa.width) / 2;
+        CGFloat windowY = (screenFrame.size.height - gwa.height) / 2;
+        windowFrame = NSMakeRect(windowX, windowY, gwa.width, gwa.height);
+
+        nsWindow = [[NSWindow alloc] initWithContentRect:windowFrame
+                                               styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable | 
+                                                          NSWindowStyleMaskClosable)
+                                                 backing:NSBackingStoreBuffered
+                                                   defer:NO];
+        [nsWindow setTitle:@"Untitled.png"];
+        NSImageView *imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, gwa.width, gwa.height)];
+        [imageView setImage:nsImage];
+        [nsWindow setContentView:imageView];
+        [nsWindow makeKeyAndOrderFront:nil];
     }
+    
+    [nsWindow setReleasedWhenClosed:NO];
+    [[NSNotificationCenter defaultCenter] addObserverForName:NSWindowWillCloseNotification
+                                                      object:nsWindow
+                                                       queue:nil
+                                                  usingBlock:^(NSNotification *note) {
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setMessageText:@"Close"];
+        [alert setInformativeText:@"Save changes to Untitled.png?"];
+        [alert addButtonWithTitle:@"Save"];
+        [alert addButtonWithTitle:@"Don't Save"];
+        [alert addButtonWithTitle:@"Cancel"];
+        
+        NSModalResponse response = [alert runModal];
+        if (response == NSAlertFirstButtonReturn) {
+            NSSavePanel *savePanel = [NSSavePanel savePanel];
+            [savePanel setAllowedFileTypes:@[@"png"]];
+            [savePanel setNameFieldStringValue:@"Untitled.png"];
+            if ([savePanel runModal] == NSModalResponseOK) {
+                NSURL *saveURL = [savePanel URL];
+                NSData *imageData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
+                [imageData writeToURL:saveURL atomically:YES];
+            }
+        } else if (response == NSAlertThirdButtonReturn) {
+            [nsWindow makeKeyAndOrderFront:nil];
+        }
+    }];
 
     XDestroyImage(image);
-    NSImage *nsImage = [[NSImage alloc] init];
-    [nsImage addRepresentation:imageRep];
     return nsImage;
 }
 
 + (NSImage *)captureScreenRect:(NSRect)rect display:(Display *)display {
     Window root = DefaultRootWindow(display);
-    XImage *image = XGetImage(display, root, (int)rect.origin.x, (int)rect.origin.y, 
+    XImage *image = XGetImage(display, root, (int)rect.origin.x, (int)rect.origin.y,
                              (unsigned int)rect.size.width, (unsigned int)rect.size.height, AllPlanes, ZPixmap);
     if (!image) {
         NSLog(@"Could not get image of screen section.");
@@ -99,15 +152,15 @@
 
     NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc]
                                   initWithBitmapDataPlanes:nil
-                                  pixelsWide:(int)rect.size.width
-                                  pixelsHigh:(int)rect.size.height
-                                  bitsPerSample:8
-                                  samplesPerPixel:4
-                                  hasAlpha:YES
-                                  isPlanar:NO
-                                  colorSpaceName:NSDeviceRGBColorSpace
-                                  bytesPerRow:4 * (int)rect.size.width
-                                  bitsPerPixel:32];
+                                                pixelsWide:(int)rect.size.width
+                                                pixelsHigh:(int)rect.size.height
+                                             bitsPerSample:8
+                                           samplesPerPixel:4
+                                                  hasAlpha:YES
+                                                  isPlanar:NO
+                                            colorSpaceName:NSDeviceRGBColorSpace
+                                               bytesPerRow:(4 * (int)rect.size.width)
+                                              bitsPerPixel:32];
 
     unsigned char *data = [imageRep bitmapData];
     for (NSUInteger y = 0; y < (NSUInteger)rect.size.height; y++) {
@@ -121,31 +174,86 @@
         }
     }
 
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateFormat:@"yyMMddHHmmss"];
-    NSString *dateString = [formatter stringFromDate:[NSDate date]];
-    [formatter release];
-    
-    NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:@"OpenShutter" ofType:@"wav"];
+    NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:@"CloseShutter" ofType:@"wav"];
     NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:YES];
+    [clickSound play];
 
-    NSString *directoryPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Screenshots"];
-    NSString *fileName = [NSString stringWithFormat:@"ss_%@.png", dateString];
-    NSString *filePath = [directoryPath stringByAppendingPathComponent:fileName];
+    NSImage *nsImage = [[NSImage alloc] initWithSize:rect.size];
+    [nsImage addRepresentation:imageRep];
 
-    NSData *imageData = [imageRep TIFFRepresentation];
-    NSBitmapImageRep *imageSave = [NSBitmapImageRep imageRepWithData:imageData];
-    NSData *pngData = [imageSave representationUsingType:NSPNGFileType properties:@{}];
-    if ([pngData writeToFile:filePath atomically:YES]) {
-	[clickSound play];
-        NSLog(@"Screenshot saved to %@", filePath);
+    NSScreen *mainScreen = [NSScreen mainScreen];
+    NSRect screenFrame = [mainScreen frame];
+
+    NSWindow *window;  
+
+    NSRect windowFrame;
+    if (NSEqualSizes(rect.size, screenFrame.size)) {
+        CGFloat windowX = (screenFrame.size.width - 800) / 2;
+        CGFloat windowY = (screenFrame.size.height - 600) / 2; 
+        windowFrame = NSMakeRect(windowX, windowY, 800, 600);
+        
+        window = [[NSWindow alloc] initWithContentRect:windowFrame
+                                             styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable | 
+						        NSWindowStyleMaskClosable | NSWindowStyleMaskResizable)
+                                               backing:NSBackingStoreBuffered
+                                                 defer:NO];
+        [window setTitle:@"Untitled.png"];
+	DraggableImageView *imageView = [[DraggableImageView alloc] initWithFrame:NSMakeRect(0, 0, rect.size.width, rect.size.height)];
+        [imageView setImage:nsImage];
+
+        NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:windowFrame];
+        [scrollView setDocumentView:imageView];
+        [scrollView setHasVerticalScroller:YES];
+        [scrollView setHasHorizontalScroller:YES];
+        [scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
+        [window setContentView:scrollView];
+        [window makeKeyAndOrderFront:nil];
     } else {
-        NSLog(@"Error saving image.");
+        CGFloat windowX = (screenFrame.size.width - rect.size.width) / 2;
+        CGFloat windowY = (screenFrame.size.height - rect.size.height) / 2;  
+        windowFrame = NSMakeRect(windowX, windowY, rect.size.width, rect.size.height);
+
+        window = [[NSWindow alloc] initWithContentRect:windowFrame
+                                             styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable | 
+                                                        NSWindowStyleMaskClosable)
+                                               backing:NSBackingStoreBuffered
+                                                 defer:NO];
+        [window setTitle:@"Untitled.png"];
+        NSImageView *imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(windowX, windowY, rect.size.width, rect.size.height)];
+        [imageView setImage:nsImage];
+        [window setContentView:imageView];
+        [window makeKeyAndOrderFront:nil];
     }
+    
+    [window setReleasedWhenClosed:NO];
+    [[NSNotificationCenter defaultCenter] addObserverForName:NSWindowWillCloseNotification
+                                                      object:window
+                                                       queue:nil
+                                                  usingBlock:^(NSNotification *note) {
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setMessageText:@"Close"];
+        [alert setInformativeText:@"Save changes to Untitled.png?"];
+        [alert addButtonWithTitle:@"Save"];
+        [alert addButtonWithTitle:@"Don't Save"];
+        [alert addButtonWithTitle:@"Cancel"];
+        
+        NSModalResponse response = [alert runModal];
+        if (response == NSAlertFirstButtonReturn) {
+            NSSavePanel *savePanel = [NSSavePanel savePanel];
+            [savePanel setAllowedFileTypes:@[@"png"]];
+            [savePanel setNameFieldStringValue:@"Untitled.png"];
+            if ([savePanel runModal] == NSModalResponseOK) {
+                NSURL *saveURL = [savePanel URL];
+                NSData *imageData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
+                [imageData writeToURL:saveURL atomically:YES];
+            }
+        } else if (response == NSAlertThirdButtonReturn) {
+            [window makeKeyAndOrderFront:nil];
+        }
+    }];
 
     XDestroyImage(image);
-    NSImage *nsImage = [[NSImage alloc] init];
-    [nsImage addRepresentation:imageRep];
     return nsImage;
 }
 

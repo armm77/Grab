@@ -307,7 +307,11 @@
 {
     [appIconButton setImage:cameraEyeImages[0]];
     currentImageIndex = 0;
-    animationTimer = [NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(updateAppIconImage) userInfo:nil repeats:YES];
+    animationTimer = [NSTimer scheduledTimerWithTimeInterval:0.3 
+                                                      target:self 
+                                                    selector:@selector(updateAppIconImage) 
+                                                    userInfo:nil 
+                                                     repeats:YES];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
@@ -325,17 +329,18 @@
         XNextEvent(display, &event);
 
         Window window = event.xbutton.subwindow;
-        if (window == None) {
-            NSLog(@"No window selected.");
-            XUngrabPointer(display, CurrentTime);
-            XCloseDisplay(display);
-            return;
+        NSImage *image;
+
+	if (window == None) {
+            window = root;
+            image = [GrabDraw captureScreenRect:NSMakeRect(0, 0, DisplayWidth(display, DefaultScreen(display)), 
+                                                           DisplayHeight(display, DefaultScreen(display))) display:display];
+        } else {
+            XRaiseWindow(display, window);
+            image = [GrabDraw captureWindowWithID:window display:display];
         }
 
-	XRaiseWindow(display, window);
         XUngrabPointer(display, CurrentTime);
-
-        NSImage *image = [GrabDraw captureWindowWithID:window display:display];
 
         if (!image) {
             NSLog(@"Error: couldn't capture window image.");

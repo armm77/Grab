@@ -24,7 +24,9 @@
 #import <X11/extensions/Xcomposite.h>
 #import <X11/cursorfont.h>
 
-@interface GrabDraw : NSObject
+@interface GrabDraw : NSObject {
+}
+
 + (NSImage *)captureWindowWithID:(Window)window display:(Display *)display;
 + (NSImage *)captureScreenRect:(NSRect)rect display:(Display *)display;
 @end

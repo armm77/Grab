@@ -3,13 +3,13 @@
     ApplicationDescription = "app for screen capture...";
     ApplicationIcon = "Grab.App.tiff";
     ApplicationName = Grab;
-    ApplicationRelease = "0.0.1b";
+    ApplicationRelease = "0.3.0b";
     Authors = (
 	"Andres Morales"
     );
     Copyright = "Copyright (C) 2024";
     CopyrightDescription = GPL;
-    FullVersionID = "0.0.1b";
+    FullVersionID = "0.3.0b";
     NSExecutable = Grab;
     NSIcon = "Grab.App.tiff";
     NSMainNibFile = "Grab.gorm";

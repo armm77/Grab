@@ -11,6 +11,7 @@
 	    "captureSelection:",
 	    "captureTimedScreen:",
 	    "captureWindow:",
+	    "copyImageToPasteboard:",
 	    "newAction:",
 	    "optionScreen:",
 	    "optionSelection:",
@@ -32,6 +33,7 @@
 	    "appIconFullScreen:",
 	    "appIconTimeScreen:",
 	    "captureScreenSection:",
+	    "copyImageToPasteboard:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showCursorPanel:",
@@ -42,7 +44,9 @@
 	    helpPanel,
 	    cursorPanel,
 	    inspectorPanel,
-	    helpText
+	    helpText,
+	    verField,
+	    copyrightField
 	);
 	Super = NSObject;
     };
