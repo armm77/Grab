@@ -9,7 +9,7 @@ include $(GNUSTEP_MAKEFILES)/common.make
 #
 # Application
 #
-VERSION = 0.3.0b
+VERSION = 0.3.1b
 PACKAGE_NAME = Grab
 APP_NAME = Grab
 Grab_APPLICATION_ICON = Grab.App.tiff

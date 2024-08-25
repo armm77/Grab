@@ -40,11 +40,15 @@
   NSImage *piePiecesImage;
   NSImage *cameraWatchImage;
   NSImage *cameraWatchFlashImage;
+  NSImage *capturedImage;
   NSTimer *animationTimer;
   NSTimer *timer;
   int currentFrame;
   int currentImageIndex;
 }
+
+- (IBAction)copyImageToClipboard:(id)sender;
+- (void)setCapturedImage:(NSImage *)image;
 
 - (void) startTimer:(id)sender;
 - (void) appIconWindow:(id)sender;

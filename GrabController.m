@@ -618,5 +618,34 @@
   [inspectorPanel makeKeyAndOrderFront:nil];
 }
 
++ (instancetype)sharedController {
+    static GrabController *sharedController = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedController = [[self alloc] init];
+    });
+    return sharedController;
+}
+
+- (void)setCapturedImage:(NSImage *)image {
+    capturedImage = image;
+}
+
+- (IBAction)copyImageToClipboard:(id)sender {
+    if (!capturedImage) {
+        NSLog(@"No image captured to copy.");
+        return;
+    }
+
+    NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:[capturedImage TIFFRepresentation]];
+    NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
+
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    [pasteboard declareTypes:@[NSPasteboardTypePNG] owner:nil];
+    [pasteboard setData:pngData forType:NSPasteboardTypePNG];
+
+    NSLog(@"Image copied to clipboard.");
+}
+
 @end
 

@@ -1,5 +1,4 @@
 #import <AppKit/AppKit.h>
-#import "ImageProviding.h"
 
 @interface DraggableImageView : NSImageView {
     NSPoint dragStartLocation;

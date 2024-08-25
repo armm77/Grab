@@ -22,211 +22,45 @@
 
 @implementation GrabDraw
 
-+ (NSImage *)captureWindowWithID:(Window)window display:(Display *)display {
-    XWindowAttributes gwa;
-    XGetWindowAttributes(display, window, &gwa);
-    XRaiseWindow(display, window);
-    XFlush(display);
-    XCompositeRedirectWindow(display, window, CompositeRedirectAutomatic);
-
-    XImage *image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
++ (NSBitmapImageRep *)bitmapImageRepFromXImage:(XImage *)image width:(NSUInteger)width height:(NSUInteger)height {
     if (!image) {
-        NSLog(@"Could not get window image.");
+        NSLog(@"Image data is nil.");
         return nil;
     }
-
     NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc]
                                   initWithBitmapDataPlanes:nil
-                                                pixelsWide:gwa.width
-                                                pixelsHigh:gwa.height
+                                                pixelsWide:width
+                                                pixelsHigh:height
                                              bitsPerSample:8
                                            samplesPerPixel:4
                                                   hasAlpha:YES
                                                   isPlanar:NO
                                             colorSpaceName:NSDeviceRGBColorSpace
-                                               bytesPerRow:4 * gwa.width
+                                               bytesPerRow:4 * width
                                               bitsPerPixel:32];
 
     unsigned char *data = [imageRep bitmapData];
-    for (NSUInteger y = 0; y < (NSUInteger)gwa.height; y++) {
-        for (NSUInteger x = 0; x < (NSUInteger)gwa.width; x++) {
+    for (NSUInteger y = 0; y < (NSUInteger)height; y++) {
+        for (NSUInteger x = 0; x < (NSUInteger)width; x++) {
             unsigned long pixel = XGetPixel(image, x, y);
-            NSUInteger index = (y * (NSUInteger)gwa.width + x) * 4;
+            NSUInteger index = (y * (NSUInteger)width + x) * 4;
             data[index + 0] = (pixel & 0xFF0000) >> 16; // Red
             data[index + 1] = (pixel & 0x00FF00) >> 8;  // Green
             data[index + 2] = (pixel & 0x0000FF);       // Blue
             data[index + 3] = 0xFF;                     // Alpha
         }
     }
-
-    NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:@"CloseShutter" ofType:@"wav"];
-    NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:YES];
-    [clickSound play];
-
-    NSImage *nsImage = [[NSImage alloc] initWithSize:NSMakeSize(gwa.width, gwa.height)];
-    [nsImage addRepresentation:imageRep];
-
-    NSScreen *mainScreen = [NSScreen mainScreen];
-    NSRect screenFrame = [mainScreen frame];
-    NSWindow *nsWindow;
-
-    NSRect windowFrame;
-    if (gwa.width == (int)screenFrame.size.width && gwa.height == (int)screenFrame.size.height) {
-        CGFloat windowX = (screenFrame.size.width - 800) / 2;
-        CGFloat windowY = (screenFrame.size.height - 600) / 2;
-        windowFrame = NSMakeRect(windowX, windowY, 800, 600);
-
-        nsWindow = [[NSWindow alloc] initWithContentRect:windowFrame
-                                               styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable | 
-                                                          NSWindowStyleMaskClosable | NSWindowStyleMaskResizable)
-                                                 backing:NSBackingStoreBuffered
-                                                   defer:NO];
-        [nsWindow setTitle:@"Untitled.png"];
-        DraggableImageView *imageView = [[DraggableImageView alloc] initWithFrame:NSMakeRect(0, 0, gwa.width, gwa.height)];
-        [imageView setImage:nsImage];
-
-        NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:windowFrame];
-        [scrollView setDocumentView:imageView];
-        [scrollView setHasVerticalScroller:YES];
-        [scrollView setHasHorizontalScroller:YES];
-        [scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
-        [nsWindow setContentView:scrollView];
-        [nsWindow makeKeyAndOrderFront:nil];
-    } else {
-        CGFloat windowX = (screenFrame.size.width - gwa.width) / 2;
-        CGFloat windowY = (screenFrame.size.height - gwa.height) / 2;
-        windowFrame = NSMakeRect(windowX, windowY, gwa.width, gwa.height);
-
-        nsWindow = [[NSWindow alloc] initWithContentRect:windowFrame
-                                               styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable | 
-                                                          NSWindowStyleMaskClosable)
-                                                 backing:NSBackingStoreBuffered
-                                                   defer:NO];
-        [nsWindow setTitle:@"Untitled.png"];
-        NSImageView *imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, gwa.width, gwa.height)];
-        [imageView setImage:nsImage];
-        [nsWindow setContentView:imageView];
-        [nsWindow makeKeyAndOrderFront:nil];
-    }
-    
-    [nsWindow setReleasedWhenClosed:NO];
-    [[NSNotificationCenter defaultCenter] addObserverForName:NSWindowWillCloseNotification
-                                                      object:nsWindow
-                                                       queue:nil
-                                                  usingBlock:^(NSNotification *note) {
-        NSAlert *alert = [[NSAlert alloc] init];
-        [alert setMessageText:@"Close"];
-        [alert setInformativeText:@"Save changes to Untitled.png?"];
-        [alert addButtonWithTitle:@"Save"];
-        [alert addButtonWithTitle:@"Don't Save"];
-        [alert addButtonWithTitle:@"Cancel"];
-        
-        NSModalResponse response = [alert runModal];
-        if (response == NSAlertFirstButtonReturn) {
-            NSSavePanel *savePanel = [NSSavePanel savePanel];
-            [savePanel setAllowedFileTypes:@[@"png"]];
-            [savePanel setNameFieldStringValue:@"Untitled.png"];
-            if ([savePanel runModal] == NSModalResponseOK) {
-                NSURL *saveURL = [savePanel URL];
-                NSData *imageData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
-                [imageData writeToURL:saveURL atomically:YES];
-            }
-        } else if (response == NSAlertThirdButtonReturn) {
-            [nsWindow makeKeyAndOrderFront:nil];
-        }
-    }];
-
-    XDestroyImage(image);
-    return nsImage;
+    return imageRep;
 }
 
-+ (NSImage *)captureScreenRect:(NSRect)rect display:(Display *)display {
-    Window root = DefaultRootWindow(display);
-    XImage *image = XGetImage(display, root, (int)rect.origin.x, (int)rect.origin.y,
-                             (unsigned int)rect.size.width, (unsigned int)rect.size.height, AllPlanes, ZPixmap);
-    if (!image) {
-        NSLog(@"Could not get image of screen section.");
-        return nil;
-    }
-
-    NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc]
-                                  initWithBitmapDataPlanes:nil
-                                                pixelsWide:(int)rect.size.width
-                                                pixelsHigh:(int)rect.size.height
-                                             bitsPerSample:8
-                                           samplesPerPixel:4
-                                                  hasAlpha:YES
-                                                  isPlanar:NO
-                                            colorSpaceName:NSDeviceRGBColorSpace
-                                               bytesPerRow:(4 * (int)rect.size.width)
-                                              bitsPerPixel:32];
-
-    unsigned char *data = [imageRep bitmapData];
-    for (NSUInteger y = 0; y < (NSUInteger)rect.size.height; y++) {
-        for (NSUInteger x = 0; x < (NSUInteger)rect.size.width; x++) {
-            unsigned long pixel = XGetPixel(image, x, y);
-            NSUInteger index = (y * (NSUInteger)rect.size.width + x) * 4;
-            data[index + 0] = (pixel & 0xFF0000) >> 16; // Red
-            data[index + 1] = (pixel & 0x00FF00) >> 8;  // Green
-            data[index + 2] = (pixel & 0x0000FF);       // Blue
-            data[index + 3] = 0xFF;                     // Alpha
-        }
-    }
-
-    NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:@"CloseShutter" ofType:@"wav"];
++ (void)playSoundWithName:(NSString *)soundName {
+    NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:soundName ofType:@"wav"];
     NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:YES];
     [clickSound play];
+}
 
-    NSImage *nsImage = [[NSImage alloc] initWithSize:rect.size];
-    [nsImage addRepresentation:imageRep];
-
-    NSScreen *mainScreen = [NSScreen mainScreen];
-    NSRect screenFrame = [mainScreen frame];
-
-    NSWindow *window;  
-
-    NSRect windowFrame;
-    if (NSEqualSizes(rect.size, screenFrame.size)) {
-        CGFloat windowX = (screenFrame.size.width - 800) / 2;
-        CGFloat windowY = (screenFrame.size.height - 600) / 2; 
-        windowFrame = NSMakeRect(windowX, windowY, 800, 600);
-        
-        window = [[NSWindow alloc] initWithContentRect:windowFrame
-                                             styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable | 
-						        NSWindowStyleMaskClosable | NSWindowStyleMaskResizable)
-                                               backing:NSBackingStoreBuffered
-                                                 defer:NO];
-        [window setTitle:@"Untitled.png"];
-	DraggableImageView *imageView = [[DraggableImageView alloc] initWithFrame:NSMakeRect(0, 0, rect.size.width, rect.size.height)];
-        [imageView setImage:nsImage];
-
-        NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:windowFrame];
-        [scrollView setDocumentView:imageView];
-        [scrollView setHasVerticalScroller:YES];
-        [scrollView setHasHorizontalScroller:YES];
-        [scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
-        [window setContentView:scrollView];
-        [window makeKeyAndOrderFront:nil];
-    } else {
-        CGFloat windowX = (screenFrame.size.width - rect.size.width) / 2;
-        CGFloat windowY = (screenFrame.size.height - rect.size.height) / 2;  
-        windowFrame = NSMakeRect(windowX, windowY, rect.size.width, rect.size.height);
-
-        window = [[NSWindow alloc] initWithContentRect:windowFrame
-                                             styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable | 
-                                                        NSWindowStyleMaskClosable)
-                                               backing:NSBackingStoreBuffered
-                                                 defer:NO];
-        [window setTitle:@"Untitled.png"];
-        NSImageView *imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(windowX, windowY, rect.size.width, rect.size.height)];
-        [imageView setImage:nsImage];
-        [window setContentView:imageView];
-        [window makeKeyAndOrderFront:nil];
-    }
-    
-    [window setReleasedWhenClosed:NO];
+// Helper method to handle window close alert
++ (void)handleWindowCloseAlertForWindow:(NSWindow *)window withImageRep:(NSBitmapImageRep *)imageRep {
     [[NSNotificationCenter defaultCenter] addObserverForName:NSWindowWillCloseNotification
                                                       object:window
                                                        queue:nil
@@ -237,7 +71,7 @@
         [alert addButtonWithTitle:@"Save"];
         [alert addButtonWithTitle:@"Don't Save"];
         [alert addButtonWithTitle:@"Cancel"];
-        
+
         NSModalResponse response = [alert runModal];
         if (response == NSAlertFirstButtonReturn) {
             NSSavePanel *savePanel = [NSSavePanel savePanel];
@@ -252,9 +86,124 @@
             [window makeKeyAndOrderFront:nil];
         }
     }];
+}
 
-    XDestroyImage(image);
-    return nsImage;
+// Helper method to create a window
++ (NSWindow *)createWindowWithRect:(NSRect)rect screenFrame:(NSRect)screenFrame {
+    NSRect imageRect;
+    NSWindow *window;
+    NSUInteger rectWidth = rect.size.width / 2;
+    NSUInteger rectHeight = rect.size.height / 2;
+    NSSize maxSize = NSMakeSize(rect.size.width + 21, rect.size.height + 51);
+
+    if (NSEqualSizes(rect.size, screenFrame.size)) {
+        CGFloat windowX = (screenFrame.size.width / 2) - (rectWidth / 2);
+        CGFloat windowY = (screenFrame.size.height / 2)- (rectHeight / 2);
+        imageRect = NSMakeRect(windowX, windowY, rect.size.width / 2 , rect.size.height / 2);
+    } else {
+        CGFloat windowX = (screenFrame.size.width - rect.size.width) / 2;
+        CGFloat windowY = (screenFrame.size.height - rect.size.height) / 2;
+        imageRect = NSMakeRect(windowX, windowY, rect.size.width + 20, rect.size.height + 20);
+    }
+
+    window = [[NSWindow alloc] initWithContentRect:imageRect
+                                         styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable |
+                                                    NSWindowStyleMaskClosable | NSWindowStyleMaskResizable)
+                                           backing:NSBackingStoreBuffered
+                                             defer:NO];
+    [window setTitle:@"Untitled.png"];
+    [window setMaxSize:maxSize];
+    [window setReleasedWhenClosed:NO];
+    return window;
+}
+
+// Helper method to set up image view and scroll view
++ (void)setupImageViewInWindow:(NSWindow *)window withImage:(NSImage *)nsImage rect:(NSRect)rect screenFrame:(NSRect)screenFrame{
+    NSRect frame = [window frame];
+
+    if (NSEqualSizes(rect.size, screenFrame.size)) {
+        DraggableImageView *imageView = [[DraggableImageView alloc] initWithFrame:NSMakeRect(0, 0, rect.size.width, rect.size.height)];
+        [imageView setImage:nsImage];
+        NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:frame];
+        [scrollView setDocumentView:imageView];
+        [scrollView setHasVerticalScroller:YES];
+        [scrollView setHasHorizontalScroller:YES];
+        [window setContentView:scrollView];
+    } else {
+        NSImageView *imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, rect.size.width, rect.size.height)];
+        [imageView setImage:nsImage];
+        NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:frame];
+        [scrollView setDocumentView:imageView];
+        [scrollView setHasVerticalScroller:YES];
+        [scrollView setHasHorizontalScroller:YES];
+        [window setContentView:scrollView];
+    }
+    [window makeKeyAndOrderFront:nil];
+}
+
+// Method to capture window
++ (NSImage *)captureWindowWithID:(Window)window display:(Display *)display {
+    XWindowAttributes gwa;
+    XGetWindowAttributes(display, window, &gwa);
+    XRaiseWindow(display, window);
+    XFlush(display);
+    XCompositeRedirectWindow(display, window, CompositeRedirectAutomatic);
+
+    XImage *image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
+    NSBitmapImageRep *imageRep = [self bitmapImageRepFromXImage:image width:gwa.width height:gwa.height];
+
+    if (!imageRep) return nil;
+
+    NSImage *finalImage = [[NSImage alloc] initWithSize:NSMakeSize(gwa.width, gwa.height)];
+    [finalImage addRepresentation:imageRep];
+
+    [self playSoundWithName:@"CloseShutter"];
+    NSRect windowRect = NSMakeRect(0, 0, gwa.width, gwa.height);
+
+    // Create and display the image viewer window
+    NSWindow *nsWindow = [self createWindowWithRect:windowRect
+                                        screenFrame:[NSScreen mainScreen].frame];
+
+    [self setupImageViewInWindow:nsWindow withImage:finalImage
+                                               rect:windowRect
+                                        screenFrame:[NSScreen mainScreen].frame];
+
+    // Handle window close alert
+    [self handleWindowCloseAlertForWindow:nsWindow withImageRep:imageRep];
+
+    return finalImage;
+}
+
+// Method to capture screen rect
++ (NSImage *)captureScreenRect:(NSRect)rect display:(Display *)display {
+    Window root = DefaultRootWindow(display);
+    XImage *image = XGetImage(display, root, (int)rect.origin.x, (int)rect.origin.y,
+                             (unsigned int)rect.size.width, (unsigned int)rect.size.height, AllPlanes, ZPixmap);
+
+    NSBitmapImageRep *imageRep = [self bitmapImageRepFromXImage:image
+                                                          width:(NSUInteger)rect.size.width
+                                                         height:(NSUInteger)rect.size.height];
+
+    if (!imageRep) return nil;
+
+    NSImage *finalImage = [[NSImage alloc] initWithSize:rect.size];
+    [finalImage addRepresentation:imageRep];
+
+    [self playSoundWithName:@"CloseShutter"];
+    NSRect screenRect = NSMakeRect(0, 0, rect.size.width, rect.size.height);
+
+    NSWindow *nsWindow = [self createWindowWithRect:rect
+                                        screenFrame:[NSScreen mainScreen].frame];
+
+    // Create and display the image viewer window
+    [self setupImageViewInWindow:nsWindow withImage:finalImage
+                                               rect:screenRect
+                                        screenFrame:[NSScreen mainScreen].frame];
+
+    // Handle window close alert
+    [self handleWindowCloseAlertForWindow:nsWindow withImageRep:imageRep];
+
+    return finalImage;
 }
 
 @end
