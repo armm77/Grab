@@ -20,7 +20,128 @@
 #import "GrabController.h"
 #import "GrabDraw.h"
 
-@implementation GrabController
+@implementation GrabController {
+    BOOL audioEnabled;
+}
+
++ (instancetype)sharedController {
+    static GrabController *sharedController = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedController = [[self alloc] init];
+    });
+    return sharedController;
+}
+
+- (void)awakeFromNib {
+    [self loadAudioStateFromPlist];
+    [self updateMenuItemTitle];
+}
+
+- (IBAction)toggleAudio:(id)sender {
+    audioEnabled = !audioEnabled;
+    [self updateMenuItemTitle];
+    [self saveAudioStateToPlist];
+}
+
+- (void)updateMenuItemTitle {
+    NSString *newTitle = audioEnabled ? @"Turn Sound Off" : @"Turn Sound On";
+    
+    if (self.audioMenuItem) {
+        [self.audioMenuItem setTitle:newTitle];
+    } else {
+        NSLog(@"Error: Menu item is not connected.");
+    }
+}
+
+- (void)loadAudioStateFromPlist {
+    NSString *configPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/Grab.plist"];
+
+    if (![[NSFileManager defaultManager] fileExistsAtPath:configPath]) {
+        NSMutableDictionary *config = [NSMutableDictionary dictionary];
+        config[@"SoundEnabled"] = @YES;
+        
+        NSError *error = nil;
+        NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:config
+                                                                       format:NSPropertyListXMLFormat_v1_0
+                                                                      options:0
+                                                                        error:&error];
+        if (plistData) {
+            BOOL success = [plistData writeToFile:configPath atomically:YES];
+            if (success) {
+                NSLog(@"Plist file created successfully with audio enabled.");
+                audioEnabled = YES; // Set the audio enabled by default in the application
+            } else {
+                NSLog(@"Error: Could not create plist file.");
+                audioEnabled = YES;
+            }
+        } else {
+            NSLog(@"Error serializing plist: %@", error.localizedDescription);
+            audioEnabled = YES;
+        }
+        
+    } else {
+        NSDictionary *config = [NSDictionary dictionaryWithContentsOfFile:configPath];
+        
+        if (config == nil) {
+            NSLog(@"The plist file could not be loaded. The default value of sound on (YES) will be used.");
+            audioEnabled = YES;
+        } else {
+            NSNumber *soundEnabledValue = config[@"SoundEnabled"];
+            
+            if (soundEnabledValue != nil) {
+                audioEnabled = [soundEnabledValue boolValue];
+            } else {
+                audioEnabled = YES;
+            }
+        }
+    }
+}
+
+- (void)saveAudioStateToPlist {
+    NSString *configPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/Grab.plist"];
+    NSMutableDictionary *config = [NSMutableDictionary dictionary];
+
+    config[@"SoundEnabled"] = @(audioEnabled);
+
+    NSError *error = nil;
+    NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:config
+                                                                   format:NSPropertyListXMLFormat_v1_0
+                                                                  options:0
+                                                                    error:&error];
+    if (plistData) {
+        BOOL success = [plistData writeToFile:configPath atomically:YES];
+        if (success) {
+            NSLog(@"Audio settings successfully saved in XML format.");
+        } else {
+            NSLog(@"Error: Failed to save audio settings.");
+        }
+    } else {
+        NSLog(@"Error serializing the plist: %@", error.localizedDescription);
+    }
+}
+
+- (BOOL)isSoundEnabled {
+    [self loadAudioStateFromPlist];
+    return audioEnabled;
+}
+
+- (void)playSoundWithName:(NSString *)soundName {
+    BOOL soundEnabled = [[GrabController sharedController] isSoundEnabled];
+
+    if (soundEnabled) {
+        NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:soundName ofType:@"wav"];
+        NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:NO];
+        if (clickSound) {
+            [clickSound play];
+            [NSThread sleepForTimeInterval:clickSound.duration];
+        } else {
+            NSLog(@"Could not load sound from path: %@", soundFilePath);
+        }
+    } else {
+        NSLog(@"Sound is disabled.");
+    }
+}
 
 - (void) loadResources
 {
@@ -191,7 +312,8 @@
 - (void) iconCaptureFullScreen
 {
     [appIconButton setImage:cameraEyeFlashImage];
-
+    [self playSoundWithName:@"OpenShutter"];
+    
     [NSTimer scheduledTimerWithTimeInterval:1.0
                                     repeats:NO
                                       block:^(NSTimer * _Nonnull timer) {
@@ -214,13 +336,12 @@
 
 - (void) updateFrame
 {
-    if (currentFrame >= 10) {
+    if (currentFrame >= 9) {
+        [self playSoundWithName:@"TimerDone"];
         [timer invalidate];
-        NSString *soundTimerPath = [[NSBundle mainBundle] pathForResource:@"TimerDone" ofType:@"wav"];
-        NSSound *soundTimer = [[NSSound alloc] initWithContentsOfFile:soundTimerPath byReference:NO];
-        [soundTimer play];
-        [NSThread sleepForTimeInterval:soundTimer.duration];
+        [self playSoundWithName:@"OpenShutter"];
         [self showFlashImage];
+        [self captureFullScreen];
         return;
     }
 
@@ -277,7 +398,6 @@
 
 - (void) showFlashImage
 {
-    [self captureFullScreen];
     NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
     [compositeImage lockFocus];
 
@@ -331,14 +451,34 @@
         Window window = event.xbutton.subwindow;
         NSImage *image;
 
-	if (window == None) {
-            window = root;
-            image = [GrabDraw captureScreenRect:NSMakeRect(0, 0, DisplayWidth(display, DefaultScreen(display)), 
-                                                           DisplayHeight(display, DefaultScreen(display))) display:display];
-        } else {
-            XRaiseWindow(display, window);
-            image = [GrabDraw captureWindowWithID:window display:display];
-        }
+	   if (window == None) {
+           [self playSoundWithName:@"OpenShutter"];
+           [animationTimer invalidate];
+           animationTimer = nil;
+           [appIconButton setImage:cameraEyeFlashImage];
+
+           [NSThread sleepForTimeInterval:1.0];
+           [appIconPanel close];
+           appIconPanel = nil;
+           appIconButton = nil;
+
+           window = root;
+           image = [GrabDraw captureScreenRect:NSMakeRect(0, 0, DisplayWidth(display, DefaultScreen(display)),
+                                                          DisplayHeight(display, DefaultScreen(display))) display:display];
+       } else {
+           [self playSoundWithName:@"OpenShutter"];
+           [animationTimer invalidate];
+           animationTimer = nil;
+           [appIconButton setImage:cameraEyeFlashImage];
+
+           [NSThread sleepForTimeInterval:1.0];
+           [appIconPanel close];
+           appIconPanel = nil;
+           appIconButton = nil;
+
+           XRaiseWindow(display, window);
+           image = [GrabDraw captureWindowWithID:window display:display];
+       }
 
         XUngrabPointer(display, CurrentTime);
 
@@ -346,20 +486,6 @@
             NSLog(@"Error: couldn't capture window image.");
             XCloseDisplay(display);
             return;
-        } else {
-            [animationTimer invalidate];
-            animationTimer = nil;
-            [appIconButton setImage:cameraEyeFlashImage];
-
-            NSString *soundPath = [[NSBundle mainBundle] pathForResource:@"OpenShutter" ofType:@"wav"];
-            NSSound *sound = [[NSSound alloc] initWithContentsOfFile:soundPath byReference:NO];
-            [sound play];
-            [NSThread sleepForTimeInterval:sound.duration];
-
-            [NSThread sleepForTimeInterval:1.0];
-            [appIconPanel close];
-            appIconPanel = nil;
-            appIconButton = nil;
         }
 
         XCloseDisplay(display);
@@ -524,8 +650,6 @@
     XUngrabKeyboard(display, CurrentTime);
     XFreeCursor(display, cursor);
     XFreeGC(display, gc);
-    XSync(display, True);
-    XUngrabServer(display);
     XCloseDisplay(display);
     });
 }
@@ -616,35 +740,6 @@
       [inspectorPanel center];
     }
   [inspectorPanel makeKeyAndOrderFront:nil];
-}
-
-+ (instancetype)sharedController {
-    static GrabController *sharedController = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedController = [[self alloc] init];
-    });
-    return sharedController;
-}
-
-- (void)setCapturedImage:(NSImage *)image {
-    capturedImage = image;
-}
-
-- (IBAction)copyImageToClipboard:(id)sender {
-    if (!capturedImage) {
-        NSLog(@"No image captured to copy.");
-        return;
-    }
-
-    NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:[capturedImage TIFFRepresentation]];
-    NSData *pngData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
-
-    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-    [pasteboard declareTypes:@[NSPasteboardTypePNG] owner:nil];
-    [pasteboard setData:pngData forType:NSPasteboardTypePNG];
-
-    NSLog(@"Image copied to clipboard.");
 }
 
 @end

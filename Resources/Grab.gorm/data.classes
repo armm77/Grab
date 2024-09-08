@@ -11,7 +11,9 @@
 	    "captureSelection:",
 	    "captureTimedScreen:",
 	    "captureWindow:",
+	    "copyImageToClipboard:",
 	    "copyImageToPasteboard:",
+	    "loadAudioStateFromPlist:",
 	    "newAction:",
 	    "optionScreen:",
 	    "optionSelection:",
@@ -22,18 +24,20 @@
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showInspectorPanel:",
-	    "startTimer:"
+	    "startTimer:",
+	    "toggleAudio:",
+	    "toggleSoundOption:"
 	);
 	Super = NSObject;
     };
     GrabController = {
 	Actions = (
+	    "toggleAudio:",
 	    "startTimer:",
 	    "appIconWindow:",
 	    "appIconFullScreen:",
 	    "appIconTimeScreen:",
 	    "captureScreenSection:",
-	    "copyImageToPasteboard:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showCursorPanel:",
@@ -46,7 +50,8 @@
 	    inspectorPanel,
 	    helpText,
 	    verField,
-	    copyrightField
+	    copyrightField,
+	    audioMenuItem
 	);
 	Super = NSObject;
     };

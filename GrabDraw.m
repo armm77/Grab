@@ -17,10 +17,22 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
+#import "GrabController.h"
 #import "GrabDraw.h"
 #import "DraggableImageView.h"
 
 @implementation GrabDraw
+
++ (void)playSoundWithName:(NSString *)soundName {
+    BOOL soundEnabled = [[GrabController sharedController] isSoundEnabled];
+
+    if (soundEnabled) {
+        NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:soundName ofType:@"wav"];
+        NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:NO];
+        [clickSound play];
+        [NSThread sleepForTimeInterval:clickSound.duration];
+    }
+}
 
 + (NSBitmapImageRep *)bitmapImageRepFromXImage:(XImage *)image width:(NSUInteger)width height:(NSUInteger)height {
     if (!image) {
@@ -51,12 +63,6 @@
         }
     }
     return imageRep;
-}
-
-+ (void)playSoundWithName:(NSString *)soundName {
-    NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:soundName ofType:@"wav"];
-    NSSound *clickSound = [[NSSound alloc] initWithContentsOfFile:soundFilePath byReference:YES];
-    [clickSound play];
 }
 
 // Helper method to handle window close alert

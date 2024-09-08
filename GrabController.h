@@ -47,8 +47,14 @@
   int currentImageIndex;
 }
 
-- (IBAction)copyImageToClipboard:(id)sender;
-- (void)setCapturedImage:(NSImage *)image;
+@property (nonatomic, assign) IBOutlet NSMenuItem *audioMenuItem;
+
++ (instancetype)sharedController;
+- (IBAction)toggleAudio:(id)sender;
+- (void)loadAudioStateFromPlist;
+- (void)saveAudioStateToPlist;
+- (void)updateMenuItemTitle;
+- (BOOL)isSoundEnabled;
 
 - (void) startTimer:(id)sender;
 - (void) appIconWindow:(id)sender;
