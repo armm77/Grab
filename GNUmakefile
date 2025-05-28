@@ -14,7 +14,6 @@ PACKAGE_NAME = Grab
 APP_NAME = Grab
 Grab_APPLICATION_ICON = Grab.App.tiff
 
-
 #
 # Resource files
 #
@@ -50,8 +49,9 @@ Resources/Grab.App.tiff \
 Resources/HelpPanel.rtf \
 Resources/CloseShutter.wav \
 Resources/OpenShutter.wav \
-Resources/TimerDone.wav 
-
+Resources/TimerDone.wav \
+Resources/English.lproj/Localizable.strings \
+Resources/Spanish.lproj/Localizable.strings
 
 #
 # Header files

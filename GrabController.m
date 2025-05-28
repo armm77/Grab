@@ -20,10 +20,34 @@
 #import "GrabController.h"
 #import "GrabDraw.h"
 
+/// Main controller for the Grab application.
+/// Manages the interface, panels, graphic resources, and screen capture.
+@interface GrabController ()
+// Application info panel.
+@property (nonatomic, strong) id infoPanel;
+// Help panel.
+@property (nonatomic, strong) id helpPanel;
+// Inspector panel.
+@property (nonatomic, strong) id inspectorPanel;
+// Cursor types panel.
+@property (nonatomic, strong) id cursorPanel;
+// Help text field.
+@property (nonatomic, strong) id helpText;
+
+// Version text field.
+@property (nonatomic, assign) IBOutlet NSTextField *verField;
+// Copyright text field.
+@property (nonatomic, assign) IBOutlet NSTextField *copyrightField;
+// Dictionary with application information.
+@property (nonatomic, strong) NSDictionary *infoDict;
+@end
+
 @implementation GrabController {
     BOOL audioEnabled;
 }
 
+/// Returns the singleton instance of the controller.
+/// @return Shared instance of GrabController.
 + (instancetype)sharedController {
     static GrabController *sharedController = nil;
     static dispatch_once_t onceToken;
@@ -33,19 +57,24 @@
     return sharedController;
 }
 
+/// Called when the nib has been loaded.
 - (void)awakeFromNib {
     [self loadAudioStateFromPlist];
     [self updateMenuItemTitle];
 }
 
+/// Toggles the audio state (on/off).
+/// @param sender The object that sent the action.
 - (IBAction)toggleAudio:(id)sender {
     audioEnabled = !audioEnabled;
     [self updateMenuItemTitle];
     [self saveAudioStateToPlist];
 }
 
+/// Updates the audio menu item title according to the current state.
 - (void)updateMenuItemTitle {
-    NSString *newTitle = audioEnabled ? @"Turn Sound Off" : @"Turn Sound On";
+    NSString *newTitle = audioEnabled ? NSLocalizedString(@"Turn Sound Off", @"Menu item to turn sound off")
+                                      : NSLocalizedString(@"Turn Sound On", @"Menu item to turn sound on");
     
     if (self.audioMenuItem) {
         [self.audioMenuItem setTitle:newTitle];
@@ -54,6 +83,7 @@
     }
 }
 
+/// Loads the audio state from the preferences plist file.
 - (void)loadAudioStateFromPlist {
     NSString *configPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/Grab.plist"];
 
@@ -69,14 +99,14 @@
         if (plistData) {
             BOOL success = [plistData writeToFile:configPath atomically:YES];
             if (success) {
-                NSLog(@"Plist file created successfully with audio enabled.");
+                NSLog(NSLocalizedString(@"Plist file created successfully with audio enabled.", @"Log: plist created"));
                 audioEnabled = YES; // Set the audio enabled by default in the application
             } else {
-                NSLog(@"Error: Could not create plist file.");
+                NSLog(NSLocalizedString(@"Error: Could not create plist file.", @"Log: plist creation failed"));
                 audioEnabled = YES;
             }
         } else {
-            NSLog(@"Error serializing plist: %@", error.localizedDescription);
+            NSLog(NSLocalizedString(@"Error serializing plist: %@", @"Log: plist serialization error"), error.localizedDescription);
             audioEnabled = YES;
         }
         
@@ -84,7 +114,7 @@
         NSDictionary *config = [NSDictionary dictionaryWithContentsOfFile:configPath];
         
         if (config == nil) {
-            NSLog(@"The plist file could not be loaded. The default value of sound on (YES) will be used.");
+            NSLog(NSLocalizedString(@"The plist file could not be loaded. The default value of sound on (YES) will be used.", @"Log: plist load failed"));
             audioEnabled = YES;
         } else {
             NSNumber *soundEnabledValue = config[@"SoundEnabled"];
@@ -98,6 +128,7 @@
     }
 }
 
+/// Saves the current audio state to the preferences plist file.
 - (void)saveAudioStateToPlist {
     NSString *configPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Preferences/Grab.plist"];
     NSMutableDictionary *config = [NSMutableDictionary dictionary];
@@ -112,20 +143,24 @@
     if (plistData) {
         BOOL success = [plistData writeToFile:configPath atomically:YES];
         if (success) {
-            NSLog(@"Audio settings successfully saved in XML format.");
+            NSLog(NSLocalizedString(@"Audio settings successfully saved in XML format.", @"Log: audio settings saved"));
         } else {
-            NSLog(@"Error: Failed to save audio settings.");
+            NSLog(NSLocalizedString(@"Error: Failed to save audio settings.", @"Log: audio settings save failed"));
         }
     } else {
-        NSLog(@"Error serializing the plist: %@", error.localizedDescription);
+        NSLog(NSLocalizedString(@"Error serializing the plist: %@", @"Log: plist serialization error"), error.localizedDescription);
     }
 }
 
+/// Indicates if the sound is enabled.
+/// @return YES if sound is enabled, NO otherwise.
 - (BOOL)isSoundEnabled {
     [self loadAudioStateFromPlist];
     return audioEnabled;
 }
 
+/// Plays a sound if audio is enabled.
+/// @param soundName Name of the sound file (without extension).
 - (void)playSoundWithName:(NSString *)soundName {
     BOOL soundEnabled = [[GrabController sharedController] isSoundEnabled];
 
@@ -143,66 +178,73 @@
     }
 }
 
-- (void) loadResources
+/// Loads the graphic resources needed for the interface.
+- (void)loadResources
 {
     NSMutableArray *loadedImages = [NSMutableArray array];
+    NSArray *imageNames = @[@"CameraEye1", @"CameraEye2", @"CameraEye3"];
+    NSMutableDictionary *config = [NSMutableDictionary dictionary];
+    config[@"SoundEnabled"] = @YES;
     
     NSString *backgroundPath = [[NSBundle mainBundle] pathForResource:@"common_Tile" ofType:@"tiff"];
-    backgroundImage = [[NSImage alloc] initWithContentsOfFile:backgroundPath];
-    if (!backgroundImage) {
+    _backgroundImage = [[NSImage alloc] initWithContentsOfFile:backgroundPath];
+    if (!_backgroundImage) {
         NSLog(@"Error: Unable to load image common_Tile.tiff");
         return;
     }
     
-    NSArray *imageNames = @[@"CameraEye1", @"CameraEye2", @"CameraEye3"];
     for (NSString *imageName in imageNames) {
         NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:@"tiff"];
         NSImage *image = [[NSImage alloc] initWithContentsOfFile:imagePath];
         if (image) {
-            [loadedImages addObject:[self compositeImage:backgroundImage withOverlay:image]];
+            [loadedImages addObject:[self compositeImage:_backgroundImage withOverlay:image]];
         } else {
-            NSLog(@"Error: Unable to load image %@", imageName);
+            NSLog(NSLocalizedString(@"Error: Unable to load image %@", @"Log: image load failed"), imageName);
         }
     }
-    cameraEyeImages = [loadedImages copy];
+    _cameraEyeImages = [loadedImages copy];
 
     NSString *pieImagePath = [[NSBundle mainBundle] pathForResource:@"PiePieces" ofType:@"tiff"];
     NSImage *pieImage = [[NSImage alloc] initWithContentsOfFile:pieImagePath];
-    piePiecesImage = [pieImage copy];
-    if (!piePiecesImage) {
+    _piePiecesImage = [pieImage copy];
+    if (!_piePiecesImage) {
         NSLog(@"Error: Unable to load image PiePieces.tiff");
     }
     
     NSString *flashImagePath = [[NSBundle mainBundle] pathForResource:@"CameraEyeFlash" ofType:@"tiff"];
     NSImage *flashImage = [[NSImage alloc] initWithContentsOfFile:flashImagePath];
-    cameraEyeFlashImage = [self compositeImage:backgroundImage withOverlay:flashImage];
-    if (!cameraEyeFlashImage) {
+    _cameraEyeFlashImage = [self compositeImage:_backgroundImage withOverlay:flashImage];
+    if (!_cameraEyeFlashImage) {
         NSLog(@"Error: Unable to load image CameraEyeFlash.tiff");
     }
     
     NSString *normalImagePath = [[NSBundle mainBundle] pathForResource:@"CameraNormal" ofType:@"tiff"];
     NSImage *normalImage = [[NSImage alloc] initWithContentsOfFile:normalImagePath];
-    cameraNormalImage = [self compositeImage:backgroundImage withOverlay:normalImage];
-    if (!cameraNormalImage) {
+    _cameraNormalImage = [self compositeImage:_backgroundImage withOverlay:normalImage];
+    if (!_cameraNormalImage) {
         NSLog(@"Error: Unable to load image CameraNormal.tiff");
     }
     
     NSString *watchImagePath = [[NSBundle mainBundle] pathForResource:@"CameraWatch" ofType:@"tiff"];
     NSImage *watchImage = [[NSImage alloc] initWithContentsOfFile:watchImagePath];
-    cameraWatchImage = [self compositeImage:backgroundImage withOverlay:watchImage];
-    if (!cameraWatchImage) {
-        NSLog(@"Error: Unable to load image CameraWatch.tiff");
+    _cameraWatchImage = [self compositeImage:_backgroundImage withOverlay:watchImage];
+    if (!_cameraWatchImage) {
+        NSLog(NSLocalizedString(@"Error: Unable to load image CameraWatch.tiff", @"Log: image load failed"));
     }
     
     NSString *watchFlashImagePath = [[NSBundle mainBundle] pathForResource:@"CameraWatchFlash" ofType:@"tiff"];
     NSImage *watchFlashImage = [[NSImage alloc] initWithContentsOfFile:watchFlashImagePath];
-    cameraWatchFlashImage = [self compositeImage:backgroundImage withOverlay:watchFlashImage];
-    if (!cameraWatchFlashImage) {
+    _cameraWatchFlashImage = [self compositeImage:_backgroundImage withOverlay:watchFlashImage];
+    if (!_cameraWatchFlashImage) {
         NSLog(@"Error: Unable to load image CameraWatchFlash.tiff");
     }
 }
 
-- (NSImage *) compositeImage:(NSImage *)background withOverlay:(NSImage *)overlay 
+/// Creates a composite image from a background and an overlay.
+/// @param background Background image.
+/// @param overlay Overlay image.
+/// @return Composite image.
+- (NSImage *)compositeImage:(NSImage *)background withOverlay:(NSImage *)overlay
 {
     NSImage *compositeImage = [[NSImage alloc] initWithSize:background.size];
     
@@ -214,131 +256,132 @@
     return compositeImage;
 }
 
-- (void) updateAppIconImage
+/// Updates the application icon image.
+- (void)updateAppIconImage
 {
-    currentImageIndex = (currentImageIndex + 1) % cameraEyeImages.count;
-    [appIconButton setImage:cameraEyeImages[currentImageIndex]];
+    _currentImageIndex = (_currentImageIndex + 1) % _cameraEyeImages.count;
+    [_appIconButton setImage:_cameraEyeImages[_currentImageIndex]];
 }
 
 - (void) appIconWindow:(id)sender
 {
     [self loadResources];
-    if (cameraEyeImages.count == 0 || !cameraEyeFlashImage) {
-        NSLog(@"Error: Images not loaded correctly. cameraEyeImages.count cameraEyeFlashImage");
+    if (_cameraEyeImages.count == 0 || !_cameraEyeFlashImage) {
+        NSLog(NSLocalizedString(@"Error: Images not loaded correctly. cameraEyeImages.count cameraEyeFlashImage", @"Log: images not loaded"));
         return;
     }
     
     NSRect screenFrame = [[NSScreen mainScreen] frame];
     NSRect panelFrame = NSMakeRect(screenFrame.size.width - 67, screenFrame.size.height - 64, 64, 64);
-    appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
-                                              styleMask:NSWindowStyleMaskBorderless
-                                                backing:NSBackingStoreBuffered
-                                                  defer:NO];
+    _appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
+                                               styleMask:NSWindowStyleMaskBorderless
+                                                 backing:NSBackingStoreBuffered
+                                                   defer:NO];
 
-    [appIconPanel setLevel:NSStatusWindowLevel];
-    [appIconPanel setOpaque:NO];
-    [appIconPanel setBackgroundColor:[NSColor clearColor]];
-    [appIconPanel makeKeyAndOrderFront:nil];
+    [_appIconPanel setLevel:NSStatusWindowLevel];
+    [_appIconPanel setOpaque:NO];
+    [_appIconPanel setBackgroundColor:[NSColor clearColor]];
+    [_appIconPanel makeKeyAndOrderFront:nil];
     
-    appIconButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
-    [appIconButton setBordered:NO];
-    [appIconButton setImage:cameraNormalImage];
-    [appIconButton setTarget:self];
-    [appIconButton setAction:@selector(captureWindow)];
+    _appIconButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
+    [_appIconButton setBordered:NO];
+    [_appIconButton setImage:_cameraNormalImage];
+    [_appIconButton setTarget:self];
+    [_appIconButton setAction:@selector(captureWindow)];
 
-    [[appIconPanel contentView] addSubview:appIconButton];
+    [[_appIconPanel contentView] addSubview:_appIconButton];
 }
 
 - (void) appIconFullScreen:(id)sender
 {
     [self loadResources];
-    if (!cameraNormalImage || !cameraEyeFlashImage) {
-        NSLog(@"Error: Images not loaded correctly. CameraNormal CameraEyeFlash");
+    if (!_cameraNormalImage || !_cameraEyeFlashImage) {
+        NSLog(NSLocalizedString(@"Error: Images not loaded correctly. CameraNormal CameraEyeFlash", @"Log: images not loaded"));
         return;
     }
     
     NSRect screenFrame = [[NSScreen mainScreen] frame];
     NSRect panelFrame = NSMakeRect(screenFrame.size.width - 67, screenFrame.size.height - 64, 64, 64);
-    appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
-                                              styleMask:NSWindowStyleMaskBorderless
-                                                backing:NSBackingStoreBuffered
-                                                  defer:NO];
-    [appIconPanel setLevel:NSStatusWindowLevel];
-    [appIconPanel setOpaque:NO];
-    [appIconPanel setBackgroundColor:[NSColor clearColor]];
-    [appIconPanel makeKeyAndOrderFront:nil];
+    _appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
+                                               styleMask:NSWindowStyleMaskBorderless
+                                                 backing:NSBackingStoreBuffered
+                                                   defer:NO];
+    [_appIconPanel setLevel:NSStatusWindowLevel];
+    [_appIconPanel setOpaque:NO];
+    [_appIconPanel setBackgroundColor:[NSColor clearColor]];
+    [_appIconPanel makeKeyAndOrderFront:nil];
     
-    appIconButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
-    [appIconButton setBordered:NO];
-    [appIconButton setImage:cameraNormalImage];
-    [appIconButton setTarget:self];
-    [appIconButton setAction:@selector(iconCaptureFullScreen)];
+    _appIconButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
+    [_appIconButton setBordered:NO];
+    [_appIconButton setImage:_cameraNormalImage];
+    [_appIconButton setTarget:self];
+    [_appIconButton setAction:@selector(iconCaptureFullScreen)];
     
-    [[appIconPanel contentView] addSubview:appIconButton];
+    [[_appIconPanel contentView] addSubview:_appIconButton];
 }
 
 - (void) appIconTimeScreen:(id)sender
 {
     [self loadResources];
-    if (!piePiecesImage || !cameraWatchImage || !cameraWatchFlashImage) {
-        NSLog(@"Error: Images not loaded correctly. PiePieces CameraWatch CameraWatchFlash");
+    if (!_piePiecesImage || !_cameraWatchImage || !_cameraWatchFlashImage) {
+        NSLog(NSLocalizedString(@"Error: Images not loaded correctly. PiePieces CameraWatch CameraWatchFlash", @"Log: images not loaded"));
         return;
     }
 
     NSRect screenFrame = [[NSScreen mainScreen] frame];
     NSRect panelFrame = NSMakeRect(screenFrame.size.width - 67, screenFrame.size.height - 64, 64, 64);
 
-    appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
-                                              styleMask:NSWindowStyleMaskBorderless
-                                                backing:NSBackingStoreBuffered
-                                                  defer:NO];
+    _appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
+                                               styleMask:NSWindowStyleMaskBorderless
+                                                 backing:NSBackingStoreBuffered
+                                                   defer:NO];
 
-    [appIconPanel setLevel:NSStatusWindowLevel];
-    [appIconPanel setOpaque:NO];
-    [appIconPanel setBackgroundColor:[NSColor clearColor]];
-    [appIconPanel makeKeyAndOrderFront:nil];
+    [_appIconPanel setLevel:NSStatusWindowLevel];
+    [_appIconPanel setOpaque:NO];
+    [_appIconPanel setBackgroundColor:[NSColor clearColor]];
+    [_appIconPanel makeKeyAndOrderFront:nil];
 
-    appIconButton = [[NSButton alloc] initWithFrame:panelFrame];
-    [appIconButton setBordered:NO];
-    [appIconButton setTarget:self];
-    [appIconButton setAction:@selector(startTimer:)];
+    _appIconButton = [[NSButton alloc] initWithFrame:panelFrame];
+    [_appIconButton setBordered:NO];
+    [_appIconButton setTarget:self];
+    [_appIconButton setAction:@selector(startTimer:)];
 
     [self updateAppIconWithCameraImage];
 
-    [[appIconPanel contentView] addSubview:appIconButton];
-    [appIconButton setFrameOrigin:NSMakePoint(0, 0)];
+    [[_appIconPanel contentView] addSubview:_appIconButton];
+    [_appIconButton setFrameOrigin:NSMakePoint(0, 0)];
 }
 
 - (void) iconCaptureFullScreen
 {
-    [appIconButton setImage:cameraEyeFlashImage];
+    [_appIconButton setImage:_cameraEyeFlashImage];
     [self playSoundWithName:@"OpenShutter"];
     
     [NSTimer scheduledTimerWithTimeInterval:1.0
                                     repeats:NO
                                       block:^(NSTimer * _Nonnull timer) {
         [self captureFullScreen];
-        [appIconPanel close];
-        appIconPanel = nil;
-        appIconButton = nil;
+        [_appIconPanel close];
+        _appIconPanel = nil;
+        _appIconButton = nil;
     }];
 }
 
 - (void) startTimer:(id)sender
 {
-    currentFrame = 0;
-    timer = [NSTimer scheduledTimerWithTimeInterval:1.0
-                                             target:self
-                                           selector:@selector(updateFrame)
-                                           userInfo:nil
-                                            repeats:YES];
+    _currentFrame = 0;
+    _timer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                              target:self
+                                            selector:@selector(updateFrame)
+                                            userInfo:nil
+                                             repeats:YES];
 }
 
 - (void) updateFrame
 {
-    if (currentFrame >= 9) {
+    if (_currentFrame >= 9) {
         [self playSoundWithName:@"TimerDone"];
-        [timer invalidate];
+        [_timer invalidate];
         [self playSoundWithName:@"OpenShutter"];
         [self showFlashImage];
         [self captureFullScreen];
@@ -346,7 +389,7 @@
     }
 
     [self updateAppIconWithPiePiece];
-    currentFrame++;
+    _currentFrame++;
 }
 
 - (void) updateAppIconWithCameraImage
@@ -354,18 +397,18 @@
     NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
     [compositeImage lockFocus];
 
-    [backgroundImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                       fromRect:NSZeroRect
-                      operation:NSCompositeSourceOver
-                       fraction:1.0];
-
-    [cameraWatchImage drawInRect:NSMakeRect(0, 0, 64, 64)
+    [_backgroundImage drawInRect:NSMakeRect(0, 0, 64, 64)
                         fromRect:NSZeroRect
                        operation:NSCompositeSourceOver
                         fraction:1.0];
 
+    [_cameraWatchImage drawInRect:NSMakeRect(0, 0, 64, 64)
+                         fromRect:NSZeroRect
+                        operation:NSCompositeSourceOver
+                         fraction:1.0];
+
     [compositeImage unlockFocus];
-    [appIconButton setImage:compositeImage];
+    [_appIconButton setImage:compositeImage];
 }
 
 - (void) updateAppIconWithPiePiece
@@ -373,27 +416,27 @@
     NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
     [compositeImage lockFocus];
 
-    [backgroundImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                       fromRect:NSZeroRect
-                      operation:NSCompositeSourceOver
-                       fraction:1.0];
-
-    [cameraWatchImage drawInRect:NSMakeRect(0, 0, 64, 64)
+    [_backgroundImage drawInRect:NSMakeRect(0, 0, 64, 64)
                         fromRect:NSZeroRect
                        operation:NSCompositeSourceOver
                         fraction:1.0];
 
-    if (currentFrame < 10) {
-        NSRect sourceRect = NSMakeRect(currentFrame * 17, 0, 17, 17);
+    [_cameraWatchImage drawInRect:NSMakeRect(0, 0, 64, 64)
+                         fromRect:NSZeroRect
+                        operation:NSCompositeSourceOver
+                         fraction:1.0];
+
+    if (_currentFrame < 10) {
+        NSRect sourceRect = NSMakeRect(_currentFrame * 17, 0, 17, 17);
         NSRect destRect = NSMakeRect(41, 40, 17, 17);
-        [piePiecesImage drawInRect:destRect
-                          fromRect:sourceRect
-                         operation:NSCompositeSourceOver
-                          fraction:1.0];
+        [_piePiecesImage drawInRect:destRect
+                           fromRect:sourceRect
+                          operation:NSCompositeSourceOver
+                           fraction:1.0];
     }
 
     [compositeImage unlockFocus];
-    [appIconButton setImage:compositeImage];
+    [_appIconButton setImage:compositeImage];
 }
 
 - (void) showFlashImage
@@ -401,42 +444,42 @@
     NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
     [compositeImage lockFocus];
 
-    [backgroundImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                       fromRect:NSZeroRect
-                      operation:NSCompositeSourceOver
-                       fraction:1.0];
+    [_backgroundImage drawInRect:NSMakeRect(0, 0, 64, 64)
+                        fromRect:NSZeroRect
+                       operation:NSCompositeSourceOver
+                        fraction:1.0];
 
-    [cameraWatchFlashImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                             fromRect:NSZeroRect
-                            operation:NSCompositeSourceOver
-                             fraction:1.0];
+    [_cameraWatchFlashImage drawInRect:NSMakeRect(0, 0, 64, 64)
+                              fromRect:NSZeroRect
+                             operation:NSCompositeSourceOver
+                              fraction:1.0];
 
     [compositeImage unlockFocus];
-    [appIconButton setImage:compositeImage];
+    [_appIconButton setImage:compositeImage];
 
     [NSTimer scheduledTimerWithTimeInterval:1.0
                                     repeats:NO
                                       block:^(NSTimer * _Nonnull timer) {
-        [appIconPanel close];
-        appIconPanel = nil;
-        appIconButton = nil;
+        [_appIconPanel close];
+        _appIconPanel = nil;
+        _appIconButton = nil;
     }];
 }
 
 - (void) captureWindow
 {
-    [appIconButton setImage:cameraEyeImages[0]];
-    currentImageIndex = 0;
-    animationTimer = [NSTimer scheduledTimerWithTimeInterval:0.3 
-                                                      target:self 
-                                                    selector:@selector(updateAppIconImage) 
-                                                    userInfo:nil 
-                                                     repeats:YES];
+    [_appIconButton setImage:_cameraEyeImages[0]];
+    _currentImageIndex = 0;
+    _animationTimer = [NSTimer scheduledTimerWithTimeInterval:0.3
+                                                       target:self
+                                                     selector:@selector(updateAppIconImage)
+                                                     userInfo:nil
+                                                      repeats:YES];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
         if (!display) {
-            NSLog(@"Error: couldnt open screen X11.");
+            NSLog(NSLocalizedString(@"Error: couldnt open screen X11.", @"Log: X11 open failed"));
             return;
         }
 
@@ -453,28 +496,28 @@
 
 	   if (window == None) {
            [self playSoundWithName:@"OpenShutter"];
-           [animationTimer invalidate];
-           animationTimer = nil;
-           [appIconButton setImage:cameraEyeFlashImage];
+           [_animationTimer invalidate];
+           _animationTimer = nil;
+           [_appIconButton setImage:_cameraEyeFlashImage];
 
            [NSThread sleepForTimeInterval:1.0];
-           [appIconPanel close];
-           appIconPanel = nil;
-           appIconButton = nil;
+           [_appIconPanel close];
+           _appIconPanel = nil;
+           _appIconButton = nil;
 
            window = root;
            image = [GrabDraw captureScreenRect:NSMakeRect(0, 0, DisplayWidth(display, DefaultScreen(display)),
-                                                          DisplayHeight(display, DefaultScreen(display))) display:display];
+                                                          DisplayHeight(display, DefaultScreen(display))) display:display rootWindow:root];
        } else {
            [self playSoundWithName:@"OpenShutter"];
-           [animationTimer invalidate];
-           animationTimer = nil;
-           [appIconButton setImage:cameraEyeFlashImage];
+           [_animationTimer invalidate];
+           _animationTimer = nil;
+           [_appIconButton setImage:_cameraEyeFlashImage];
 
            [NSThread sleepForTimeInterval:1.0];
-           [appIconPanel close];
-           appIconPanel = nil;
-           appIconButton = nil;
+           [_appIconPanel close];
+           _appIconPanel = nil;
+           _appIconButton = nil;
 
            XRaiseWindow(display, window);
            image = [GrabDraw captureWindowWithID:window display:display];
@@ -483,7 +526,7 @@
         XUngrabPointer(display, CurrentTime);
 
         if (!image) {
-            NSLog(@"Error: couldn't capture window image.");
+            NSLog(NSLocalizedString(@"Error: couldn't capture window image.", @"Log: window capture failed"));
             XCloseDisplay(display);
             return;
         }
@@ -497,7 +540,7 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
         if (!display) {
-            NSLog(@"Error: couldn't open screen X11.");
+            NSLog(NSLocalizedString(@"Error: couldn't open screen X11.", @"Log: X11 open failed"));
             return;
         }
 
@@ -505,7 +548,7 @@
 
         if (XGrabPointer(display, root, False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
                          GrabModeAsync, GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {
-            NSLog(@"Error: couldn't capture pointer.");
+            NSLog(NSLocalizedString(@"Error: couldn't capture pointer.", @"Log: pointer capture failed"));
             XCloseDisplay(display);
             return;
         }
@@ -638,9 +681,9 @@
     }
 
     NSRect rect = NSMakeRect(rect_x, rect_y, rect_w, rect_h);
-    NSImage *image = [GrabDraw captureScreenRect:rect display:display];
+    NSImage *image = [GrabDraw captureScreenRect:rect display:display rootWindow:root];
     if (!image) {
-        NSLog(@"Could not capture section of screen image.");
+        NSLog(NSLocalizedString(@"Could not capture section of screen image.", @"Log: section capture failed"));
         XCloseDisplay(display);
         return;
     }
@@ -649,6 +692,10 @@
     XUngrabPointer(display, CurrentTime);
     XUngrabKeyboard(display, CurrentTime);
     XFreeCursor(display, cursor);
+    XFreeCursor(display, cursor_nw);
+    XFreeCursor(display, cursor_ne);
+    XFreeCursor(display, cursor_se);
+    XFreeCursor(display, cursor_sw);
     XFreeGC(display, gc);
     XCloseDisplay(display);
     });
@@ -659,18 +706,23 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Display *display = XOpenDisplay(NULL);
         if (!display) {
-            NSLog(@"Could not open screen X11.");
+            NSLog(NSLocalizedString(@"Could not open screen X11.", @"Log: X11 open failed"));
             return;
         }
 
         Window root = DefaultRootWindow(display);
+        if (!root) {
+            NSLog(NSLocalizedString(@"Could not open Window.", @"Log: Window open failed"));
+            return;
+        }
+
         XWindowAttributes gwa;
         XGetWindowAttributes(display, root, &gwa);
 
         NSRect rect = NSMakeRect(0, 0, gwa.width, gwa.height);
-        NSImage *image = [GrabDraw captureScreenRect:rect display:display];
+        NSImage *image = [GrabDraw captureScreenRect:rect display:display rootWindow:root];
         if (!image) {
-            NSLog(@"Could not capture screen image.");
+            NSLog(NSLocalizedString(@"Could not capture screen image.", @"Log: screen capture failed"));
             XCloseDisplay(display);
             return;
         }
@@ -686,60 +738,66 @@
 
 - (void) showHelpPanel:(id)sender
 {
-  if (!helpPanel) {
+  if (!_helpPanel) {
       if (![NSBundle loadNibNamed:@"HelpPanel" owner:self]) {
-          NSLog (@"Faild to load HelpPanel.gorm");
+          NSLog (NSLocalizedString(@"Faild to load HelpPanel.gorm", @"Log: help panel load failed"));
           return;
         }
-      [helpPanel center];
+      [_helpPanel center];
     }
 
   NSString *textPath = [[NSBundle mainBundle] pathForResource:@"HelpPanel" ofType: @"rtf"];
   NSData *text = [NSData dataWithContentsOfFile:textPath];
-  [helpText replaceCharactersInRange:NSMakeRange(0, 0) withRTF:text];
+  [_helpText replaceCharactersInRange:NSMakeRange(0, 0) withRTF:text];
 
-  [helpPanel makeKeyAndOrderFront:nil];
+  [_helpPanel makeKeyAndOrderFront:nil];
 }
 
-- (void) showInfoPanel:(id)sender
+/// Shows the information panel.
+/// @param sender The object that sent the action.
+- (void)showInfoPanel:(id)sender
 {
   NSString *file = [[NSBundle mainBundle] pathForResource:@"GrabInfo" ofType: @"plist"];
-  infoDict = [NSDictionary dictionaryWithContentsOfFile:file];
+  _infoDict = [NSDictionary dictionaryWithContentsOfFile:file];
 
-  if (!infoPanel) {
+  if (!_infoPanel) {
       if (![NSBundle loadNibNamed:@"InfoPanel" owner:self]) {
-          NSLog (@"Faild to load InfoPanel.gorm");
+          NSLog (NSLocalizedString(@"Faild to load InfoPanel.gorm", @"Log: info panel load failed"));
           return;
         }
-      [verField setStringValue:[NSString stringWithFormat:@"Release %@", [infoDict objectForKey:@"ApplicationRelease"]]];
-      [copyrightField setStringValue:[infoDict objectForKey:@"Copyright"]];
-      [infoPanel center];
+      [_verField setStringValue:[NSString stringWithFormat:@"Release %@", [_infoDict objectForKey:@"ApplicationRelease"]]];
+      [_copyrightField setStringValue:[_infoDict objectForKey:@"Copyright"]];
+      [_infoPanel center];
     }
-  [infoPanel makeKeyAndOrderFront:nil];
+  [_infoPanel makeKeyAndOrderFront:nil];
 }
 
-- (void) showCursorPanel:(id)sender
+/// Shows the cursor types panel.
+/// @param sender The object that sent the action.
+- (void)showCursorPanel:(id)sender
 {
-  if (!cursorPanel) {
+  if (!_cursorPanel) {
       if (![NSBundle loadNibNamed:@"CursorTypes" owner:self]) {
-          NSLog (@"Faild to load CursorTypes.gorm");
+          NSLog (NSLocalizedString(@"Faild to load CursorTypes.gorm", @"Log: cursor panel load failed"));
           return;
         }
-      [cursorPanel center];
+      [_cursorPanel center];
     }
-  [cursorPanel makeKeyAndOrderFront:nil];
+  [_cursorPanel makeKeyAndOrderFront:nil];
 }
 
-- (void) showInspectorPanel:(id)sender
+/// Shows the inspector panel.
+/// @param sender The object that sent the action.
+- (void)showInspectorPanel:(id)sender
 {
-  if (!inspectorPanel) {
+  if (!_inspectorPanel) {
       if (![NSBundle loadNibNamed:@"InspectorPanel" owner:self]) {
-          NSLog (@"Faild to load InspectorPanel.gorm");
+          NSLog (NSLocalizedString(@"Faild to load InspectorPanel.gorm", @"Log: inspector panel load failed"));
           return;
         }
-      [inspectorPanel center];
+      [_inspectorPanel center];
     }
-  [inspectorPanel makeKeyAndOrderFront:nil];
+  [_inspectorPanel makeKeyAndOrderFront:nil];
 }
 
 @end

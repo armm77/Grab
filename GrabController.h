@@ -17,37 +17,30 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
+
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
-@interface GrabController : NSObject <NSApplicationDelegate> {
-  id  infoPanel;
-  id  helpPanel;
-  id  cursorPanel;
-  id  inspectorPanel;
-  id  helpText;
+@interface GrabController : NSObject <NSApplicationDelegate>
 
-  IBOutlet NSTextField* verField;
-  IBOutlet NSTextField* copyrightField;
-  NSDictionary *infoDict;
+@property (nonatomic, strong) NSButton *appIconButton;
+@property (nonatomic, strong) NSImage *backgroundImage;
+@property (nonatomic, strong) NSImage *cameraEyeFlashImage;
+@property (nonatomic, strong) NSImage *cameraNormalImage;
+@property (nonatomic, strong) NSImage *piePiecesImage;
+@property (nonatomic, strong) NSImage *cameraWatchImage;
+@property (nonatomic, strong) NSImage *cameraWatchFlashImage;
+@property (nonatomic, strong) NSImage *capturedImage;
+@property (nonatomic, strong) NSArray<NSImage *> *cameraEyeImages;
 
-  NSPanel *appIconPanel;
-  NSButton *appIconButton;
-  NSArray<NSImage *> *cameraEyeImages;
-  NSImage *backgroundImage;
-  NSImage *cameraEyeFlashImage;
-  NSImage *cameraNormalImage;
-  NSImage *piePiecesImage;
-  NSImage *cameraWatchImage;
-  NSImage *cameraWatchFlashImage;
-  NSImage *capturedImage;
-  NSTimer *animationTimer;
-  NSTimer *timer;
-  int currentFrame;
-  int currentImageIndex;
-}
+@property (nonatomic, strong) NSTimer *animationTimer;
+@property (nonatomic, strong) NSTimer *timer;
+@property (nonatomic, assign) int currentFrame;
+@property (nonatomic, assign) int currentImageIndex;
 
 @property (nonatomic, assign) IBOutlet NSMenuItem *audioMenuItem;
+@property (nonatomic, strong) NSPanel *appIconMenuItem;
+@property (nonatomic, strong) NSPanel *appIconPanel;
 
 + (instancetype)sharedController;
 - (IBAction)toggleAudio:(id)sender;
@@ -56,15 +49,15 @@
 - (void)updateMenuItemTitle;
 - (BOOL)isSoundEnabled;
 
-- (void) startTimer:(id)sender;
-- (void) appIconWindow:(id)sender;
-- (void) appIconFullScreen:(id)sender;
-- (void) appIconTimeScreen:(id)sender;
-- (void) captureScreenSection:(id)sender;
+- (void)startTimer:(id)sender;
+- (void)appIconWindow:(id)sender;
+- (void)appIconFullScreen:(id)sender;
+- (void)appIconTimeScreen:(id)sender;
+- (void)captureScreenSection:(id)sender;
 
-- (void) showHelpPanel:(id)sender;
-- (void) showInfoPanel:(id)sender;
-- (void) showCursorPanel:(id)sender;
-- (void) showInspectorPanel:(id)sender;
+- (void)showHelpPanel:(id)sender;
+- (void)showInfoPanel:(id)sender;
+- (void)showCursorPanel:(id)sender;
+- (void)showInspectorPanel:(id)sender;
 
 @end

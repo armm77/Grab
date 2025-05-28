@@ -36,7 +36,7 @@
 
 + (NSBitmapImageRep *)bitmapImageRepFromXImage:(XImage *)image width:(NSUInteger)width height:(NSUInteger)height {
     if (!image) {
-        NSLog(@"Image data is nil.");
+        NSLog(NSLocalizedString(@"Image data is nil.", @"Error message when XImage is nil"));
         return nil;
     }
     NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc]
@@ -72,17 +72,17 @@
                                                        queue:nil
                                                   usingBlock:^(NSNotification *note) {
         NSAlert *alert = [[NSAlert alloc] init];
-        [alert setMessageText:@"Close"];
-        [alert setInformativeText:@"Save changes to Untitled.png?"];
-        [alert addButtonWithTitle:@"Save"];
-        [alert addButtonWithTitle:@"Don't Save"];
-        [alert addButtonWithTitle:@"Cancel"];
+        [alert setMessageText:NSLocalizedString(@"Close", @"Alert title when closing window")];
+        [alert setInformativeText:NSLocalizedString(@"Save changes to Untitled.png?", @"Alert message when closing window with unsaved changes")];
+        [alert addButtonWithTitle:NSLocalizedString(@"Save", @"Button title to save changes")];
+        [alert addButtonWithTitle:NSLocalizedString(@"Don't Save", @"Button title to discard changes")];
+        [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Button title to cancel closing")];
 
         NSModalResponse response = [alert runModal];
         if (response == NSAlertFirstButtonReturn) {
             NSSavePanel *savePanel = [NSSavePanel savePanel];
             [savePanel setAllowedFileTypes:@[@"png"]];
-            [savePanel setNameFieldStringValue:@"Untitled.png"];
+            [savePanel setNameFieldStringValue:NSLocalizedString(@"Untitled.png", @"Default file name for saving image")];
             if ([savePanel runModal] == NSModalResponseOK) {
                 NSURL *saveURL = [savePanel URL];
                 NSData *imageData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
@@ -103,9 +103,9 @@
     NSSize maxSize = NSMakeSize(rect.size.width + 21, rect.size.height + 51);
 
     if (NSEqualSizes(rect.size, screenFrame.size)) {
-        CGFloat windowX = (screenFrame.size.width / 2) - (rectWidth / 2);
-        CGFloat windowY = (screenFrame.size.height / 2)- (rectHeight / 2);
-        imageRect = NSMakeRect(windowX, windowY, rect.size.width / 2 , rect.size.height / 2);
+        CGFloat windowX = (screenFrame.size.width / 2.0) - (((CGFloat)rectWidth) / 2.0);
+        CGFloat windowY = (screenFrame.size.height / 2.0) - (((CGFloat)rectHeight) / 2.0);
+        imageRect = NSMakeRect(windowX, windowY, rect.size.width / 2.0 , rect.size.height / 2.0);
     } else {
         CGFloat windowX = (screenFrame.size.width - rect.size.width) / 2;
         CGFloat windowY = (screenFrame.size.height - rect.size.height) / 2;
@@ -117,7 +117,7 @@
                                                     NSWindowStyleMaskClosable | NSWindowStyleMaskResizable)
                                            backing:NSBackingStoreBuffered
                                              defer:NO];
-    [window setTitle:@"Untitled.png"];
+    [window setTitle:NSLocalizedString(@"Untitled.png", @"Default window title for new image")];
     [window setMaxSize:maxSize];
     [window setReleasedWhenClosed:NO];
     return window;
@@ -181,9 +181,9 @@
 }
 
 // Method to capture screen rect
-+ (NSImage *)captureScreenRect:(NSRect)rect display:(Display *)display {
-    Window root = DefaultRootWindow(display);
-    XImage *image = XGetImage(display, root, (int)rect.origin.x, (int)rect.origin.y,
++ (NSImage *)captureScreenRect:(NSRect)rect display:(Display *)display rootWindow:(Window)rootWindow {
+
+    XImage *image = XGetImage(display, rootWindow, (int)rect.origin.x, (int)rect.origin.y,
                              (unsigned int)rect.size.width, (unsigned int)rect.size.height, AllPlanes, ZPixmap);
 
     NSBitmapImageRep *imageRep = [self bitmapImageRepFromXImage:image
