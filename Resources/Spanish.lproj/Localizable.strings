@@ -30,4 +30,5 @@
 "Untitled.png" = "Sin título.png";
 "Save changes to Untitled.png?" = "¿Guardar cambios en Sin título.png?";
 "Image data is nil." = "Los datos de la imagen son nulos.";
+"No image to print." = "No hay imagen para imprimir.";
 

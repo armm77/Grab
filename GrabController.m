@@ -40,6 +40,10 @@
 @property (nonatomic, assign) IBOutlet NSTextField *copyrightField;
 // Dictionary with application information.
 @property (nonatomic, strong) NSDictionary *infoDict;
+
+// Array of image views associated with cameraEyeImages
+@property (nonatomic, strong) NSArray<NSImageView *> *imageViews;
+
 @end
 
 @implementation GrabController {
@@ -531,6 +535,8 @@
             return;
         }
 
+        _capturedImage = image;
+
         XCloseDisplay(display);
     });
 }
@@ -688,6 +694,8 @@
         return;
     }
 
+    _capturedImage = image;
+
     XClearWindow(display, root);
     XUngrabPointer(display, CurrentTime);
     XUngrabKeyboard(display, CurrentTime);
@@ -726,6 +734,8 @@
             XCloseDisplay(display);
             return;
         }
+
+        _capturedImage = image;
 
         XCloseDisplay(display);
     });
@@ -790,14 +800,121 @@
 /// @param sender The object that sent the action.
 - (void)showInspectorPanel:(id)sender
 {
-  if (!_inspectorPanel) {
-      if (![NSBundle loadNibNamed:@"InspectorPanel" owner:self]) {
-          NSLog (NSLocalizedString(@"Faild to load InspectorPanel.gorm", @"Log: inspector panel load failed"));
-          return;
+    if (!_inspectorPanel) {
+        if (![NSBundle loadNibNamed:@"InspectorPanel" owner:self]) {
+            NSLog (NSLocalizedString(@"Faild to load InspectorPanel.gorm", @"Log: inspector panel load failed"));
+            return;
         }
-      [_inspectorPanel center];
+        [_inspectorPanel center];
     }
-  [_inspectorPanel makeKeyAndOrderFront:nil];
+
+    if (_capturedImage) {
+        NSBitmapImageRep *bitmap = [[_capturedImage representations] firstObject];
+        NSInteger width = bitmap.pixelsWide;
+        NSInteger height = bitmap.pixelsHigh;
+        NSInteger depth = bitmap.bitsPerPixel;
+        BOOL hasAlpha = bitmap.hasAlpha;
+        NSData *tiffData = [_capturedImage TIFFRepresentation];
+        NSUInteger size = [tiffData length];
+
+        [_widthField setStringValue:[NSString stringWithFormat:@"%04ld", (long)width]];
+        [_heightField setStringValue:[NSString stringWithFormat:@"%04ld", (long)height]];
+        [_depthField setStringValue:[NSString stringWithFormat:@"%04ld", (long)depth]];
+        [_sizeField setStringValue:[NSString stringWithFormat:@"%lu", (unsigned long)size]];
+        [_alphaCheckbox setState:hasAlpha ? NSControlStateValueOn : NSControlStateValueOff];
+    } else {
+        [_widthField setStringValue:@"0000"];
+        [_heightField setStringValue:@"0000"];
+        [_depthField setStringValue:@"0000"];
+        [_sizeField setStringValue:@"0"];
+        [_alphaCheckbox setState:NSControlStateValueOff];
+    }
+
+    [_inspectorPanel makeKeyAndOrderFront:nil];
+}
+
+
+- (IBAction)printImage:(id)sender
+{
+    if (!_capturedImage) {
+        NSLog(NSLocalizedString(@"No image to print.", @"Log: print with no image"));
+        return;
+    }
+
+    NSImageView *imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, _capturedImage.size.width, _capturedImage.size.height)];
+    [imageView setImage:_capturedImage];
+
+    NSPrintOperation *printOp = [NSPrintOperation printOperationWithView:imageView];
+    [printOp runOperation];
+}
+
+- (IBAction)copyImage:(id)sender
+{
+    if (!_capturedImage) {
+        NSLog(NSLocalizedString(@"No image to copy.", @"Log: copy with no image"));
+        return;
+    }
+
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    [pasteboard declareTypes:@[NSPasteboardTypeTIFF] owner:nil];
+    NSData *tiffData = [_capturedImage TIFFRepresentation];
+    BOOL success = (tiffData && [pasteboard setData:tiffData forType:NSPasteboardTypeTIFF]);
+    if (success) {
+        NSLog(NSLocalizedString(@"Image copied to clipboard.", @"Log: image copied"));
+    } else {
+        NSLog(NSLocalizedString(@"Failed to copy image to clipboard.", @"Log: image copy failed"));
+    }
+}
+
+- (IBAction)saveImage:(id)sender
+{
+    if (!_capturedImage) {
+        NSLog(NSLocalizedString(@"No image to save.", @"Log: save with no image"));
+        return;
+    }
+
+    NSSavePanel *savePanel = [NSSavePanel savePanel];
+    [savePanel setAllowedFileTypes:@[@"png"]];
+    [savePanel setNameFieldStringValue:@"Untitled"];
+    [savePanel setMessage:NSLocalizedString(@"Choose a location to save the image.", @"Save panel message")];
+
+    [savePanel beginWithCompletionHandler:^(NSModalResponse result) {
+        if (result == NSModalResponseOK) {
+            NSURL *fileURL = [savePanel URL];
+            if (fileURL) {
+                NSData *imageData = [_capturedImage TIFFRepresentation];
+                if (!imageData) {
+                    NSLog(NSLocalizedString(@"Failed to get image data.", @"Log: image data failed"));
+                    return;
+                }
+
+                NSString *fileExtension = [[fileURL pathExtension] lowercaseString];
+                if ([fileExtension isEqualToString:@"png"]) {
+                    NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:imageData];
+                    imageData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
+                }
+
+                NSError *error = nil;
+                BOOL success = [imageData writeToURL:fileURL options:NSDataWritingAtomic error:&error];
+                if (success) {
+                    NSLog(NSLocalizedString(@"Image saved successfully to %@", @"Log: image saved"), [fileURL path]);
+                } else {
+                    NSLog(NSLocalizedString(@"Failed to save image: %@", @"Log: save failed"), error.localizedDescription);
+                }
+            }
+        }
+    }];
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+    if ([menuItem action] == @selector(printImage:) ||
+        [menuItem action] == @selector(copyImageToPasteboard:) ||
+        [menuItem action] == @selector(showInspectorPanel:) ||
+        [menuItem action] == @selector(saveImage:)) {
+        return (_capturedImage != nil);
+    }
+    return YES;
 }
 
 @end

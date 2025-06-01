@@ -42,8 +42,19 @@
 @property (nonatomic, strong) NSPanel *appIconMenuItem;
 @property (nonatomic, strong) NSPanel *appIconPanel;
 
+@property (nonatomic, assign) IBOutlet NSTextField *widthField;
+@property (nonatomic, assign) IBOutlet NSTextField *heightField;
+@property (nonatomic, assign) IBOutlet NSTextField *depthField;
+@property (nonatomic, assign) IBOutlet NSTextField *sizeField;
+@property (nonatomic, assign) IBOutlet NSButton *alphaCheckbox;
+
+
 + (instancetype)sharedController;
 - (IBAction)toggleAudio:(id)sender;
+- (IBAction)printImage:(id)sender;
+- (IBAction)copyImage:(id)sender;
+- (IBAction)saveImage:(id)sender;
+
 - (void)loadAudioStateFromPlist;
 - (void)saveAudioStateToPlist;
 - (void)updateMenuItemTitle;

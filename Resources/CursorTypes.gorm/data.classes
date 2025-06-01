@@ -16,36 +16,53 @@
     };
     FirstResponder = {
 	Actions = (
+	    "appIconFullScreen:",
+	    "appIconTimeScreen:",
+	    "appIconWindow:",
 	    "captureFullScreen:",
 	    "captureScreen:",
 	    "captureScreenSection:",
 	    "captureTimedScreen:",
 	    "captureWindow:",
+	    "changeCursor:",
+	    "copyImageToPasteboard:",
+	    "printImage:",
+	    "saveImage:",
 	    "showCursorPanel:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showInspectorPanel:",
 	    "showPrefPanel:",
-	    "showPrefsPanel:"
+	    "showPrefsPanel:",
+	    "startTimer:",
+	    "toggleAudio:"
 	);
 	Super = NSObject;
     };
     GrabController = {
 	Actions = (
-	    "captureWindow:",
+	    "toggleAudio:",
+	    "printImage:",
+	    "copyImageToPasteboard:",
+	    "saveImage:",
+	    "changeCursor:",
+	    "startTimer:",
+	    "appIconWindow:",
+	    "appIconFullScreen:",
+	    "appIconTimeScreen:",
 	    "captureScreenSection:",
-	    "captureFullScreen:",
-	    "captureTimedScreen:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showCursorPanel:",
 	    "showInspectorPanel:"
 	);
 	Outlets = (
-	    infoPanel,
-	    helpPanel,
-	    cursorPanel,
-	    inspectorPanel
+	    audioMenuItem,
+	    widthField,
+	    heightField,
+	    depthField,
+	    sizeField,
+	    alphaCheckbox
 	);
 	Super = NSObject;
     };
