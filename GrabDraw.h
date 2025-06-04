@@ -29,5 +29,7 @@
 
 + (NSImage *)captureWindowWithID:(Window)window display:(Display *)display;
 + (NSImage *)captureScreenRect:(NSRect)rect display:(Display *)display rootWindow:(Window)root;
++ (BOOL)saveImageToDisk:(NSImage *)image;
+
 @end
 

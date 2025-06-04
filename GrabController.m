@@ -23,25 +23,15 @@
 /// Main controller for the Grab application.
 /// Manages the interface, panels, graphic resources, and screen capture.
 @interface GrabController ()
-// Application info panel.
 @property (nonatomic, strong) id infoPanel;
-// Help panel.
 @property (nonatomic, strong) id helpPanel;
-// Inspector panel.
 @property (nonatomic, strong) id inspectorPanel;
-// Cursor types panel.
 @property (nonatomic, strong) id cursorPanel;
-// Help text field.
 @property (nonatomic, strong) id helpText;
 
-// Version text field.
 @property (nonatomic, assign) IBOutlet NSTextField *verField;
-// Copyright text field.
 @property (nonatomic, assign) IBOutlet NSTextField *copyrightField;
-// Dictionary with application information.
 @property (nonatomic, strong) NSDictionary *infoDict;
-
-// Array of image views associated with cameraEyeImages
 @property (nonatomic, strong) NSArray<NSImageView *> *imageViews;
 
 @end
@@ -104,7 +94,7 @@
             BOOL success = [plistData writeToFile:configPath atomically:YES];
             if (success) {
                 NSLog(NSLocalizedString(@"Plist file created successfully with audio enabled.", @"Log: plist created"));
-                audioEnabled = YES; // Set the audio enabled by default in the application
+                audioEnabled = YES;
             } else {
                 NSLog(NSLocalizedString(@"Error: Could not create plist file.", @"Log: plist creation failed"));
                 audioEnabled = YES;
@@ -267,6 +257,28 @@
     [_appIconButton setImage:_cameraEyeImages[_currentImageIndex]];
 }
 
+- (void)createAppIconPanelWithImage:(NSImage *)image action:(SEL)action
+{
+    NSRect screenFrame = [[NSScreen mainScreen] frame];
+    NSRect panelFrame = NSMakeRect(screenFrame.size.width - 67, screenFrame.size.height - 64, 64, 64);
+    _appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
+                                               styleMask:NSWindowStyleMaskBorderless
+                                                 backing:NSBackingStoreBuffered
+                                                   defer:NO];
+    [_appIconPanel setLevel:NSStatusWindowLevel];
+    [_appIconPanel setOpaque:NO];
+    [_appIconPanel setBackgroundColor:[NSColor clearColor]];
+    [_appIconPanel makeKeyAndOrderFront:nil];
+
+    _appIconButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
+    [_appIconButton setBordered:NO];
+    [_appIconButton setImage:image];
+    [_appIconButton setTarget:self];
+    [_appIconButton setAction:action];
+
+    [[_appIconPanel contentView] addSubview:_appIconButton];
+}
+
 - (void) appIconWindow:(id)sender
 {
     [self loadResources];
@@ -275,23 +287,7 @@
         return;
     }
     
-    NSRect screenFrame = [[NSScreen mainScreen] frame];
-    NSRect panelFrame = NSMakeRect(screenFrame.size.width - 67, screenFrame.size.height - 64, 64, 64);
-    _appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
-                                               styleMask:NSWindowStyleMaskBorderless
-                                                 backing:NSBackingStoreBuffered
-                                                   defer:NO];
-
-    [_appIconPanel setLevel:NSStatusWindowLevel];
-    [_appIconPanel setOpaque:NO];
-    [_appIconPanel setBackgroundColor:[NSColor clearColor]];
-    [_appIconPanel makeKeyAndOrderFront:nil];
-    
-    _appIconButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
-    [_appIconButton setBordered:NO];
-    [_appIconButton setImage:_cameraNormalImage];
-    [_appIconButton setTarget:self];
-    [_appIconButton setAction:@selector(captureWindow)];
+    [self createAppIconPanelWithImage:_cameraNormalImage action:@selector(captureWindow)];
 
     [[_appIconPanel contentView] addSubview:_appIconButton];
 }
@@ -304,23 +300,8 @@
         return;
     }
     
-    NSRect screenFrame = [[NSScreen mainScreen] frame];
-    NSRect panelFrame = NSMakeRect(screenFrame.size.width - 67, screenFrame.size.height - 64, 64, 64);
-    _appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
-                                               styleMask:NSWindowStyleMaskBorderless
-                                                 backing:NSBackingStoreBuffered
-                                                   defer:NO];
-    [_appIconPanel setLevel:NSStatusWindowLevel];
-    [_appIconPanel setOpaque:NO];
-    [_appIconPanel setBackgroundColor:[NSColor clearColor]];
-    [_appIconPanel makeKeyAndOrderFront:nil];
-    
-    _appIconButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 64, 64)];
-    [_appIconButton setBordered:NO];
-    [_appIconButton setImage:_cameraNormalImage];
-    [_appIconButton setTarget:self];
-    [_appIconButton setAction:@selector(iconCaptureFullScreen)];
-    
+    [self createAppIconPanelWithImage:_cameraNormalImage action:@selector(iconCaptureFullScreen)];
+
     [[_appIconPanel contentView] addSubview:_appIconButton];
 }
 
@@ -331,24 +312,8 @@
         NSLog(NSLocalizedString(@"Error: Images not loaded correctly. PiePieces CameraWatch CameraWatchFlash", @"Log: images not loaded"));
         return;
     }
-
-    NSRect screenFrame = [[NSScreen mainScreen] frame];
-    NSRect panelFrame = NSMakeRect(screenFrame.size.width - 67, screenFrame.size.height - 64, 64, 64);
-
-    _appIconPanel = [[NSPanel alloc] initWithContentRect:panelFrame
-                                               styleMask:NSWindowStyleMaskBorderless
-                                                 backing:NSBackingStoreBuffered
-                                                   defer:NO];
-
-    [_appIconPanel setLevel:NSStatusWindowLevel];
-    [_appIconPanel setOpaque:NO];
-    [_appIconPanel setBackgroundColor:[NSColor clearColor]];
-    [_appIconPanel makeKeyAndOrderFront:nil];
-
-    _appIconButton = [[NSButton alloc] initWithFrame:panelFrame];
-    [_appIconButton setBordered:NO];
-    [_appIconButton setTarget:self];
-    [_appIconButton setAction:@selector(startTimer:)];
+    
+    [self createAppIconPanelWithImage:_cameraWatchImage action:@selector(startTimer:)];
 
     [self updateAppIconWithCameraImage];
 
@@ -396,70 +361,66 @@
     _currentFrame++;
 }
 
-- (void) updateAppIconWithCameraImage
+/// Helper method to update the icon panel button image.
+/// Allows overlaying multiple images and optionally a "pie piece".
+- (void)setAppIconWithBase:(NSImage *)base
+                   overlay:(NSImage *)overlay
+                 piePieces:(NSImage *)piePieces
+               pieFrameIdx:(NSInteger)frameIdx
 {
     NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
     [compositeImage lockFocus];
 
-    [_backgroundImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                        fromRect:NSZeroRect
-                       operation:NSCompositeSourceOver
-                        fraction:1.0];
+    // Draw background/base
+    [base drawInRect:NSMakeRect(0, 0, 64, 64)
+            fromRect:NSZeroRect
+           operation:NSCompositeSourceOver
+            fraction:1.0];
 
-    [_cameraWatchImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                         fromRect:NSZeroRect
-                        operation:NSCompositeSourceOver
-                         fraction:1.0];
+    // Overlapping main draw
+    if (overlay) {
+        [overlay drawInRect:NSMakeRect(0, 0, 64, 64)
+                   fromRect:NSZeroRect
+                  operation:NSCompositeSourceOver
+                   fraction:1.0];
+    }
 
-    [compositeImage unlockFocus];
-    [_appIconButton setImage:compositeImage];
-}
-
-- (void) updateAppIconWithPiePiece
-{
-    NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
-    [compositeImage lockFocus];
-
-    [_backgroundImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                        fromRect:NSZeroRect
-                       operation:NSCompositeSourceOver
-                        fraction:1.0];
-
-    [_cameraWatchImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                         fromRect:NSZeroRect
-                        operation:NSCompositeSourceOver
-                         fraction:1.0];
-
-    if (_currentFrame < 10) {
-        NSRect sourceRect = NSMakeRect(_currentFrame * 17, 0, 17, 17);
+    // Draw pie piece if applicable
+    if (piePieces && frameIdx >= 0 && frameIdx < 10) {
+        NSRect sourceRect = NSMakeRect(frameIdx * 17, 0, 17, 17);
         NSRect destRect = NSMakeRect(41, 40, 17, 17);
-        [_piePiecesImage drawInRect:destRect
-                           fromRect:sourceRect
-                          operation:NSCompositeSourceOver
-                           fraction:1.0];
+        [piePieces drawInRect:destRect
+                     fromRect:sourceRect
+                    operation:NSCompositeSourceOver
+                     fraction:1.0];
     }
 
     [compositeImage unlockFocus];
     [_appIconButton setImage:compositeImage];
 }
 
-- (void) showFlashImage
+- (void)updateAppIconWithCameraImage
 {
-    NSImage *compositeImage = [[NSImage alloc] initWithSize:NSMakeSize(64, 64)];
-    [compositeImage lockFocus];
+    [self setAppIconWithBase:_backgroundImage
+                     overlay:_cameraWatchImage
+                   piePieces:nil
+                 pieFrameIdx:-1];
+}
 
-    [_backgroundImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                        fromRect:NSZeroRect
-                       operation:NSCompositeSourceOver
-                        fraction:1.0];
+- (void)updateAppIconWithPiePiece
+{
+    [self setAppIconWithBase:_backgroundImage
+                     overlay:_cameraWatchImage
+                   piePieces:_piePiecesImage
+                 pieFrameIdx:_currentFrame];
+}
 
-    [_cameraWatchFlashImage drawInRect:NSMakeRect(0, 0, 64, 64)
-                              fromRect:NSZeroRect
-                             operation:NSCompositeSourceOver
-                              fraction:1.0];
-
-    [compositeImage unlockFocus];
-    [_appIconButton setImage:compositeImage];
+- (void)showFlashImage
+{
+    [self setAppIconWithBase:_backgroundImage
+                     overlay:_cameraWatchFlashImage
+                   piePieces:nil
+                 pieFrameIdx:-1];
 
     [NSTimer scheduledTimerWithTimeInterval:1.0
                                     repeats:NO
@@ -833,7 +794,6 @@
     [_inspectorPanel makeKeyAndOrderFront:nil];
 }
 
-
 - (IBAction)printImage:(id)sender
 {
     if (!_capturedImage) {
@@ -866,44 +826,10 @@
     }
 }
 
+
 - (IBAction)saveImage:(id)sender
 {
-    if (!_capturedImage) {
-        NSLog(NSLocalizedString(@"No image to save.", @"Log: save with no image"));
-        return;
-    }
-
-    NSSavePanel *savePanel = [NSSavePanel savePanel];
-    [savePanel setAllowedFileTypes:@[@"png"]];
-    [savePanel setNameFieldStringValue:@"Untitled"];
-    [savePanel setMessage:NSLocalizedString(@"Choose a location to save the image.", @"Save panel message")];
-
-    [savePanel beginWithCompletionHandler:^(NSModalResponse result) {
-        if (result == NSModalResponseOK) {
-            NSURL *fileURL = [savePanel URL];
-            if (fileURL) {
-                NSData *imageData = [_capturedImage TIFFRepresentation];
-                if (!imageData) {
-                    NSLog(NSLocalizedString(@"Failed to get image data.", @"Log: image data failed"));
-                    return;
-                }
-
-                NSString *fileExtension = [[fileURL pathExtension] lowercaseString];
-                if ([fileExtension isEqualToString:@"png"]) {
-                    NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:imageData];
-                    imageData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
-                }
-
-                NSError *error = nil;
-                BOOL success = [imageData writeToURL:fileURL options:NSDataWritingAtomic error:&error];
-                if (success) {
-                    NSLog(NSLocalizedString(@"Image saved successfully to %@", @"Log: image saved"), [fileURL path]);
-                } else {
-                    NSLog(NSLocalizedString(@"Failed to save image: %@", @"Log: save failed"), error.localizedDescription);
-                }
-            }
-        }
-    }];
+    [GrabDraw saveImageToDisk:_capturedImage];
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem

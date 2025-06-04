@@ -65,33 +65,52 @@
     return imageRep;
 }
 
-// Helper method to handle window close alert
-+ (void)handleWindowCloseAlertForWindow:(NSWindow *)window withImageRep:(NSBitmapImageRep *)imageRep {
-    [[NSNotificationCenter defaultCenter] addObserverForName:NSWindowWillCloseNotification
-                                                      object:window
-                                                       queue:nil
-                                                  usingBlock:^(NSNotification *note) {
-        NSAlert *alert = [[NSAlert alloc] init];
-        [alert setMessageText:NSLocalizedString(@"Close", @"Alert title when closing window")];
-        [alert setInformativeText:NSLocalizedString(@"Save changes to Untitled.png?", @"Alert message when closing window with unsaved changes")];
-        [alert addButtonWithTitle:NSLocalizedString(@"Save", @"Button title to save changes")];
-        [alert addButtonWithTitle:NSLocalizedString(@"Don't Save", @"Button title to discard changes")];
-        [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Button title to cancel closing")];
+/// Helper method for saving an image to disk.
+/// Returns YES if the save was successful, NO if there was an error or the user canceled.
++ (BOOL)saveImageToDisk:(NSImage *)image
+{
+    if (!image) {
+        NSLog(NSLocalizedString(@"No image to save.", @"Log: save with no image"));
+        return NO;
+    }
 
-        NSModalResponse response = [alert runModal];
-        if (response == NSAlertFirstButtonReturn) {
-            NSSavePanel *savePanel = [NSSavePanel savePanel];
-            [savePanel setAllowedFileTypes:@[@"png"]];
-            [savePanel setNameFieldStringValue:NSLocalizedString(@"Untitled.png", @"Default file name for saving image")];
-            if ([savePanel runModal] == NSModalResponseOK) {
-                NSURL *saveURL = [savePanel URL];
-                NSData *imageData = [imageRep representationUsingType:NSPNGFileType properties:@{}];
-                [imageData writeToURL:saveURL atomically:YES];
-            }
-        } else if (response == NSAlertThirdButtonReturn) {
-            [window makeKeyAndOrderFront:nil];
-        }
-    }];
+    NSSavePanel *savePanel = [NSSavePanel savePanel];
+    [savePanel setAllowedFileTypes:@[@"png", @"tiff", @"jpg"]];
+    [savePanel setNameFieldStringValue:@"CapturedImage"];
+    [savePanel setMessage:NSLocalizedString(@"Choose a location to save the image.", @"Save panel message")];
+
+    NSInteger result = [savePanel runModal];
+    if (result == NSModalResponseOK) {
+        NSURL *fileURL = [savePanel URL];
+        return [self saveImage:image toURL:fileURL];
+    }
+    return NO;
+}
+
++ (BOOL)saveImage:(NSImage *)image toURL:(NSURL *)fileURL
+{
+    if (!image || !fileURL) return NO;
+    NSString *ext = [[fileURL pathExtension] lowercaseString];
+    NSData *imageData = [self imageDataFromImage:image withExtension:ext];
+    NSError *error = nil;
+    BOOL success = [imageData writeToURL:fileURL options:NSDataWritingAtomic error:&error];
+    if (!success) {
+        NSLog(NSLocalizedString(@"Failed to save image: %@", @"Log: save failed"), error.localizedDescription);
+    }
+    return success;
+}
+
++ (NSData *)imageDataFromImage:(NSImage *)image withExtension:(NSString *)ext
+{
+    NSData *imageData = [image TIFFRepresentation];
+    if ([ext isEqualToString:@"png"]) {
+        NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:imageData];
+        return [imageRep representationUsingType:NSPNGFileType properties:@{}];
+    } else if ([ext isEqualToString:@"jpg"] || [ext isEqualToString:@"jpeg"]) {
+        NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:imageData];
+        return [imageRep representationUsingType:NSJPEGFileType properties:@{NSImageCompressionFactor: @0.9}];
+    }
+    return imageData;
 }
 
 // Helper method to create a window
@@ -124,26 +143,20 @@
 }
 
 // Helper method to set up image view and scroll view
-+ (void)setupImageViewInWindow:(NSWindow *)window withImage:(NSImage *)nsImage rect:(NSRect)rect screenFrame:(NSRect)screenFrame{
++ (void)setupImageViewInWindow:(NSWindow *)window withImage:(NSImage *)nsImage rect:(NSRect)rect screenFrame:(NSRect)screenFrame {
     NSRect frame = [window frame];
-
+    NSView *imageView;
     if (NSEqualSizes(rect.size, screenFrame.size)) {
-        DraggableImageView *imageView = [[DraggableImageView alloc] initWithFrame:NSMakeRect(0, 0, rect.size.width, rect.size.height)];
-        [imageView setImage:nsImage];
-        NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:frame];
-        [scrollView setDocumentView:imageView];
-        [scrollView setHasVerticalScroller:YES];
-        [scrollView setHasHorizontalScroller:YES];
-        [window setContentView:scrollView];
+        imageView = [[DraggableImageView alloc] initWithFrame:NSMakeRect(0, 0, rect.size.width, rect.size.height)];
     } else {
-        NSImageView *imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, rect.size.width, rect.size.height)];
-        [imageView setImage:nsImage];
-        NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:frame];
-        [scrollView setDocumentView:imageView];
-        [scrollView setHasVerticalScroller:YES];
-        [scrollView setHasHorizontalScroller:YES];
-        [window setContentView:scrollView];
+        imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, rect.size.width, rect.size.height)];
     }
+    [(id)imageView setImage:nsImage];
+    NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:frame];
+    [scrollView setDocumentView:imageView];
+    [scrollView setHasVerticalScroller:YES];
+    [scrollView setHasHorizontalScroller:YES];
+    [window setContentView:scrollView];
     [window makeKeyAndOrderFront:nil];
 }
 
@@ -165,18 +178,7 @@
 
     [self playSoundWithName:@"CloseShutter"];
     NSRect windowRect = NSMakeRect(0, 0, gwa.width, gwa.height);
-
-    // Create and display the image viewer window
-    NSWindow *nsWindow = [self createWindowWithRect:windowRect
-                                        screenFrame:[NSScreen mainScreen].frame];
-
-    [self setupImageViewInWindow:nsWindow withImage:finalImage
-                                               rect:windowRect
-                                        screenFrame:[NSScreen mainScreen].frame];
-
-    // Handle window close alert
-    [self handleWindowCloseAlertForWindow:nsWindow withImageRep:imageRep];
-
+    [self showImageInWindow:finalImage rect:windowRect screenFrame:[NSScreen mainScreen].frame];
     return finalImage;
 }
 
@@ -197,19 +199,14 @@
 
     [self playSoundWithName:@"CloseShutter"];
     NSRect screenRect = NSMakeRect(0, 0, rect.size.width, rect.size.height);
-
-    NSWindow *nsWindow = [self createWindowWithRect:rect
-                                        screenFrame:[NSScreen mainScreen].frame];
-
-    // Create and display the image viewer window
-    [self setupImageViewInWindow:nsWindow withImage:finalImage
-                                               rect:screenRect
-                                        screenFrame:[NSScreen mainScreen].frame];
-
-    // Handle window close alert
-    [self handleWindowCloseAlertForWindow:nsWindow withImageRep:imageRep];
-
+    [self showImageInWindow:finalImage rect:screenRect screenFrame:[NSScreen mainScreen].frame];
     return finalImage;
+}
+
++ (void)showImageInWindow:(NSImage *)image rect:(NSRect)rect screenFrame:(NSRect)screenFrame
+{
+    NSWindow *nsWindow = [self createWindowWithRect:rect screenFrame:screenFrame];
+    [self setupImageViewInWindow:nsWindow withImage:image rect:rect screenFrame:screenFrame];
 }
 
 @end
