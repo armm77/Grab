@@ -12,6 +12,7 @@ This application is intended to be a recreation of the excellent and original **
 
 ### Requirements:
 * libX11-devel
+* libXcursor-devel
 * libXcomposite-devel
 * libdispatch
 
