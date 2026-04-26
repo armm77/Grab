@@ -5,7 +5,7 @@
 "Cancel" = "Cancelar";
 "Turn Sound Off" = "Desactivar sonido";
 "Turn Sound On" = "Activar sonido";
-"Error: Images not loaded correctly. cameraEyeImages.count cameraEyeFlashImage" = "Error: Las imágenes no se cargaron correctamente. cameraEyeImages.count cameraEyeFlashImage";
+"Error: Images not loaded correctly. cameraEyeImages.count cameraEyeFlashImage" = "Error: Las imágenes no se cargaron correctamente.";
 "Error: Unable to load image CameraWatchFlash.tiff" = "Error: No se pudo cargar la imagen CameraWatchFlash.tiff";
 "Plist file created successfully with audio enabled." = "Archivo plist creado correctamente con el audio activado.";
 "Error: Could not create plist file." = "Error: No se pudo crear el archivo plist.";
@@ -17,6 +17,14 @@
 "Faild to load HelpPanel.gorm" = "No se pudo cargar HelpPanel.gorm";
 "Faild to load InfoPanel.gorm" = "No se pudo cargar InfoPanel.gorm";
 "Faild to load CursorTypes.gorm" = "No se pudo cargar CursorTypes.gorm";
+"Choose Cursor" = "Elegir cursor";
+"Pointer to use during capture:" = "Puntero a usar durante la captura:";
+"Camera Pointer" = "Puntero de cámara";
+"Crosshair" = "Mira";
+"Arrow" = "Flecha";
+"Hand" = "Mano";
+"Cross" = "Cruz";
+"OK" = "Aceptar";
 "Faild to load InspectorPanel.gorm" = "No se pudo cargar InspectorPanel.gorm";
 "Error: couldn't open screen X11." = "Error: no se pudo abrir la pantalla X11.";
 "Error: couldn't capture window image." = "Error: no se pudo capturar la imagen de la ventana.";
@@ -28,7 +36,7 @@
 "Could not open screen X11." = "No se pudo abrir la pantalla X11.";
 "Could not capture screen image." = "No se pudo capturar la imagen de pantalla.";
 "Untitled.png" = "Sin título.png";
-"Save changes to Untitled.png?" = "¿Guardar cambios en Sin título.png?";
+"Save changes to %@?" = "¿Guardar cambios en %@?";
+"Choose a location to save the image." = "Elija una ubicación para guardar la imagen.";
 "Image data is nil." = "Los datos de la imagen son nulos.";
 "No image to print." = "No hay imagen para imprimir.";
-

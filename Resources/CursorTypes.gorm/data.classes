@@ -1,40 +1,19 @@
 {
     "## Comment" = "Do NOT change this file, Gorm maintains it";
-    AppController = {
-	Actions = (
-	    "showInfoPanel:",
-	    "showCursorPanel:",
-	    "showInspectorPanel:",
-	    "captureScreen:"
-	);
-	Outlets = (
-	    infoPanel,
-	    inspectorPanel,
-	    cursorPanel
-	);
-	Super = NSObject;
-    };
     FirstResponder = {
 	Actions = (
-	    "appIconFullScreen:",
-	    "appIconTimeScreen:",
-	    "appIconWindow:",
 	    "captureFullScreen:",
-	    "captureScreen:",
 	    "captureScreenSection:",
-	    "captureTimedScreen:",
 	    "captureWindow:",
 	    "changeCursor:",
-	    "copyImageToPasteboard:",
+	    "copyImage:",
 	    "printImage:",
 	    "saveImage:",
 	    "showCursorPanel:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showInspectorPanel:",
-	    "showPrefPanel:",
-	    "showPrefsPanel:",
-	    "startTimer:",
+	    "startTimedCapture:",
 	    "toggleAudio:"
 	);
 	Super = NSObject;
@@ -42,19 +21,18 @@
     GrabController = {
 	Actions = (
 	    "toggleAudio:",
-	    "printImage:",
-	    "copyImageToPasteboard:",
-	    "saveImage:",
-	    "changeCursor:",
-	    "startTimer:",
-	    "appIconWindow:",
-	    "appIconFullScreen:",
-	    "appIconTimeScreen:",
+	    "captureWindow:",
+	    "captureFullScreen:",
 	    "captureScreenSection:",
+	    "startTimedCapture:",
+	    "printImage:",
+	    "copyImage:",
+	    "saveImage:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showCursorPanel:",
-	    "showInspectorPanel:"
+	    "showInspectorPanel:",
+	    "changeCursor:"
 	);
 	Outlets = (
 	    audioMenuItem,
@@ -62,7 +40,8 @@
 	    heightField,
 	    depthField,
 	    sizeField,
-	    alphaCheckbox
+	    alphaCheckbox,
+	    cursorPanel
 	);
 	Super = NSObject;
     };

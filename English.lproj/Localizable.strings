@@ -17,6 +17,14 @@
 "Faild to load HelpPanel.gorm" = "Failed to load HelpPanel.gorm";
 "Faild to load InfoPanel.gorm" = "Failed to load InfoPanel.gorm";
 "Faild to load CursorTypes.gorm" = "Failed to load CursorTypes.gorm";
+"Choose Cursor" = "Choose Cursor";
+"Pointer to use during capture:" = "Pointer to use during capture:";
+"Camera Pointer" = "Camera Pointer";
+"Crosshair" = "Crosshair";
+"Arrow" = "Arrow";
+"Hand" = "Hand";
+"Cross" = "Cross";
+"OK" = "OK";
 "Faild to load InspectorPanel.gorm" = "Failed to load InspectorPanel.gorm";
 "Error: couldn't open screen X11." = "Error: couldn't open screen X11.";
 "Error: couldn't capture window image." = "Error: couldn't capture window image.";
@@ -28,6 +36,7 @@
 "Could not open screen X11." = "Could not open screen X11.";
 "Could not capture screen image." = "Could not capture screen image.";
 "Untitled.png" = "Untitled.png";
-"Save changes to Untitled.png?" = "Save changes to Untitled.png?";
+"Save changes to %@?" = "Save changes to %@?";
+"Choose a location to save the image." = "Choose a location to save the image.";
 "Image data is nil." = "Image data is nil.";
 "No image to print." = "No image to print.";

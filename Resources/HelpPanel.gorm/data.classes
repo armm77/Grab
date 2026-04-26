@@ -1,39 +1,24 @@
 {
     "## Comment" = "Do NOT change this file, Gorm maintains it";
-    AppController = {
-	Actions = (
-	    "showPrefPanel:",
-	    "showInfoPanel:",
-	    "showInspectorPanel:"
-	);
-	Outlets = (
-	    infoPanel,
-	    inspectorPanel
-	);
-	Super = NSObject;
-    };
     FirstResponder = {
 	Actions = (
 	    "captureFullScreen:",
 	    "captureScreenSection:",
-	    "captureTimedScreen:",
 	    "captureWindow:",
-	    "showAppIconCaptureWindow:",
 	    "showCursorPanel:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showInspectorPanel:",
-	    "showPrefPanel:"
+	    "startTimedCapture:"
 	);
 	Super = NSObject;
     };
     GrabController = {
 	Actions = (
 	    "captureWindow:",
-	    "captureScreenSection:",
 	    "captureFullScreen:",
-	    "captureTimedScreen:",
-	    "showAppIconCaptureWindow:",
+	    "captureScreenSection:",
+	    "startTimedCapture:",
 	    "showHelpPanel:",
 	    "showInfoPanel:",
 	    "showCursorPanel:",
