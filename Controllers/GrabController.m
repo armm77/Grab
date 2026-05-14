@@ -1,6 +1,9 @@
 /*
    Project: Grab
    Module:  GrabController
+
+   Copyright (C) 2020-2026 Andres Morales
+
 */
 
 #import "GrabController.h"

@@ -2,6 +2,8 @@
    Project: Grab
    Module:  GrabController
 
+   Copyright (C) 2020-2026 Andres Morales
+
    Application delegate and central UI coordinator.
 
    This program is free software; you can redistribute it and/or modify

@@ -2,6 +2,8 @@
    Project: Grab
    Module:  main
 
+   Copyright (C) 2020-2026 Andres Morales
+
    Application entry point.
 
    This program is free software; you can redistribute it and/or modify

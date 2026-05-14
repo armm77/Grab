@@ -1,7 +1,6 @@
 # Grab 0.9.0
 
 Screen capture application for NEXTSPACE on GNU/Linux (X11).
-Original author: Andres Morales (armm77).
 Modular refactoring: clean architecture, ARC, NEXTSPACE integration.
 
 This application is intended to be a recreation of the excellent and original **Grab** application created by **Keith Bernstein** and developed for the [NeXTSTEP](https://en.wikipedia.org/wiki/NeXTSTEP)/[OPENSTEP](https://en.wikipedia.org/wiki/OpenStep).
@@ -46,7 +45,7 @@ This application is intended to be a recreation of the excellent and original **
 make CC=clang
 
 # Install to /Applications
-make install
+sudo -E make install
 ```
 
 ### Launching

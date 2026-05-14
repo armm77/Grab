@@ -2,6 +2,8 @@
    Project: Grab
    Module:  GrabCaptureManager
 
+   Copyright (C) 2020-2026 Andres Morales
+
    Handles all screen/window capture operations via X11.
    Writes results exclusively through GrabSession.
    Drives GrabAnimationController during capture sequences.
@@ -36,7 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface GrabCaptureManager : NSObject
 
-/// Returns the shared instance.
 + (instancetype)sharedManager;
 
 // ── Capture entry points (called from GrabController IBActions / services) ────

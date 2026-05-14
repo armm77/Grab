@@ -2,6 +2,8 @@
    Project: Grab
    Module:  GrabCaptureManager+Private
 
+   Copyright (C) 2020-2026 Andres Morales
+
    Private interface for GrabAnimationController methods called via
    -performSelectorOnMainThread: from GrabCaptureManager background threads.
 

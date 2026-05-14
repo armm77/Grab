@@ -2,6 +2,8 @@
    Project: Grab
    Module:  DraggableImageView
 
+   Copyright (C) 2020-2026 Andres Morales
+
    A custom NSImageView that allows the user to drag (pan) a full-screen
    image that has been scaled to fit the window.
 

@@ -2,6 +2,8 @@
    Project: Grab
    Module:  GrabImageProcessor
 
+   Copyright (C) 2020-2026 Andres Morales
+
    Low-level X11 → NSImage conversion utilities.
    This class has no knowledge of GrabSession, preferences, or the UI.
 
