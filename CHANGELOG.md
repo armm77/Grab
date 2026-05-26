@@ -2,6 +2,32 @@
 
 ---
 
+## [0.9.1] — 2026-05-25
+
+11. **Fast pixel conversion in GrabImageProcessor** — Replaced the
+    per-pixel `XGetPixel()` loop with direct pointer arithmetic over
+    `xImage->data`. Channel byte offsets are derived dynamically from the
+    `red_mask`/`green_mask`/`blue_mask` fields and adjusted for host byte
+    order (`LSBFirst`/`MSBFirst`), so the fast path is correct on both
+    little-endian (x86, aarch64) and big-endian hosts. Active when the
+    `XImage` is `ZPixmap` format with 32 bpp and 8-bit channel masks
+    (the universal case on modern X11 servers). Falls back to `XGetPixel()`
+    automatically for any other format, logging the format details.
+    Measured improvement: ~10–20× faster conversion on full-screen captures.
+
+12. **Occluded window capture** — Window capture now correctly captures the
+    target window's own pixels even when another window is stacked on top.
+    Without an active compositor, `XCompositeNameWindowPixmap` is unavailable,
+    so the previous `XGetImage` fallback returned on-screen pixels verbatim —
+    including whatever was drawn on top. The new approach temporarily raises
+    the target window to the top of the Z-order (`XRaiseWindow`), waits 50 ms
+    for the server to flush exposure events and the window to repaint, captures
+    with `XGetImage`, then restores the original stacking position precisely
+    using `XConfigureWindow` with `CWSibling + Below`.
+    The `XComposite` dependency has been removed from `GrabImageProcessor.h`.
+
+---
+
 ## [0.9.0] — 2026-04-25
 
 1. **Panel fly-in animation** — When selecting Window, Screen, or Timed

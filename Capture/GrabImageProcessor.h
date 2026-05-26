@@ -17,7 +17,6 @@
 #import <AppKit/AppKit.h>
 #import <X11/Xlib.h>
 #import <X11/Xutil.h>
-#import <X11/extensions/Xcomposite.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

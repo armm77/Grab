@@ -1,4 +1,4 @@
-# Grab 0.9.0
+# Grab 0.9.1
 
 Screen capture application for NEXTSPACE on GNU/Linux (X11).
 Modular refactoring: clean architecture, ARC, NEXTSPACE integration.
