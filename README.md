@@ -30,7 +30,6 @@ This application is intended to be a recreation of the excellent and original **
 | libobjc2 | ≥ 2.0 | ARC runtime (`-fobjc-arc`, `dispatch_once`) |
 | libdispatch | 6.0.2 | GCD — `dispatch_once`, `dispatch_async`, main queue |
 | X11 / libX11 | 21.1.21 | Screen capture |
-| libXcomposite | 0.4.6 | Window capture compositing |
 | libXcursor | 1.2.3 | Custom cursors |
 
 ---

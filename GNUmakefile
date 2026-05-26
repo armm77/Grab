@@ -2,7 +2,7 @@
 # GNUmakefile — Grab Application
 # ARC build (Automatic Reference Counting)
 #
-# Requires: gnustep-make 2.x, libobjc2 >= 2.0, libX11, libXcomposite,
+# Requires: gnustep-make 2.x, libobjc2 >= 2.0, libX11,
 #           libdispatch (libkqueue on Linux)
 #
 # Build:        make

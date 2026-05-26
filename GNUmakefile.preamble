@@ -34,7 +34,6 @@ ADDITIONAL_INCLUDE_DIRS += \
 # -lobjc        libobjc2 runtime (provides ARC retain/release stubs).
 # -ldispatch    libdispatch (GCD) — dispatch_once, dispatch_async, main queue.
 # -lX11         X11 base library (display, windows, events).
-# -lXcomposite  XComposite extension (off-screen window pixmap capture).
 # -lXcursor     Xcursor library (ARGB cursor from TIFF bitmap).
 ADDITIONAL_LDFLAGS += \
 	-lDesktopKit \
@@ -42,5 +41,4 @@ ADDITIONAL_LDFLAGS += \
 	-lobjc \
 	-ldispatch \
 	-lX11 \
-	-lXcomposite \
 	-lXcursor
