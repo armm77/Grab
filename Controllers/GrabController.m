@@ -129,11 +129,12 @@
 
 - (IBAction)showInfoPanel:(id)sender {
     if (!_infoPanel) {
-        NSString *plist = [[NSBundle mainBundle]
-                              pathForResource:@"GrabInfo" ofType:@"plist"];
-        NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:plist];
+        //NSString *plist = [[NSBundle mainBundle]
+        //                      pathForResource:@"GrabInfo" ofType:@"plist"];
+        //NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:plist];
+	NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
         if (!info) {
-            NSLog(@"GrabController: could not load GrabInfo.plist.");
+            NSLog(@"GrabController: bundle info dictionary unavailable.");
             info = @{};
         }
         if (![NSBundle loadNibNamed:@"InfoPanel" owner:self]) return;

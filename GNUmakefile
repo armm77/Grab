@@ -57,7 +57,6 @@ Grab_OBJC_FILES = \
 
 # ── Resource files ─────────────────────────────────────────────────────────────
 Grab_RESOURCE_FILES = \
-	Resources/GrabInfo.plist \
 	Resources/InfoPanel.gorm \
 	Resources/InspectorPanel.gorm \
 	Resources/CursorTypes.gorm \
